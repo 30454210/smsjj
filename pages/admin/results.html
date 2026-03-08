@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Results & Exams — EduNigeria SMS</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="sb-overlay" class="sb-overlay"></div>
+<aside id="sidebar" class="sidebar"></aside>
+<div class="main-wrap">
+<header id="navbar" class="navbar"></header>
+<main class="page-content">
+
+  <div class="pg-header">
+    <div class="breadcrumb">
+      <a href="dashboard.html">Home</a>
+      <span class="material-icons">chevron_right</span><span>Results & Exams</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1>Results & Examination</h1>
+        <p>Enter CA scores, exam marks, auto-grade and generate report cards</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-outline btn-sm" onclick="showToast('Result sheet exported','success')"><span class="material-icons">download</span>Export</button>
+        <button class="btn btn-outline btn-sm" onclick="openModal('broadsheetModal')"><span class="material-icons">table_chart</span>Broadsheet</button>
+        <button class="btn btn-primary" onclick="openModal('enterResultModal')">
+          <span class="material-icons">add</span>Enter Results
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#E8F5E9"><span class="material-icons" style="color:#2E7D32;font-size:24px">grade</span></div>
+      <div class="stat-value" data-count="69.2" data-suffix="%">69.2%</div>
+      <div class="stat-label">School Average Score</div>
+      <div class="stat-change change-up"><span class="material-icons">trending_up</span>+1.8% vs last term</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#E3F2FD"><span class="material-icons" style="color:#0D47A1;font-size:24px">emoji_events</span></div>
+      <div class="stat-value" data-count="245">245</div>
+      <div class="stat-label">Students with Grade A</div>
+      <div class="stat-change change-up"><span class="material-icons">trending_up</span>21.8% of school</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#FFEBEE"><span class="material-icons" style="color:#C62828;font-size:24px">do_not_disturb</span></div>
+      <div class="stat-value" data-count="92">92</div>
+      <div class="stat-label">Students with Grade F</div>
+      <div class="stat-change change-down"><span class="material-icons">trending_down</span>-18 vs last term</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#FFF8E1"><span class="material-icons" style="color:#FF8F00;font-size:24px">pending</span></div>
+      <div class="stat-value" data-count="3">3</div>
+      <div class="stat-label">Classes Pending Results</div>
+      <div class="stat-change change-down"><span class="material-icons">schedule</span>Upload required</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:4px;background:var(--border);border-radius:12px;padding:4px;width:fit-content;margin-bottom:20px">
+    <button class="btn btn-primary btn-sm" id="tab-entry" onclick="switchTab('entry')">Score Entry</button>
+    <button class="btn btn-ghost btn-sm" id="tab-reports" onclick="switchTab('reports')">Report Cards</button>
+    <button class="btn btn-ghost btn-sm" id="tab-analytics" onclick="switchTab('analytics')">Analytics</button>
+  </div>
+
+  <!-- TAB: Score Entry -->
+  <div id="panel-entry">
+    <!-- Filters -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-body" style="padding:14px 18px">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+          <select class="form-select" id="termSel" style="width:auto" onchange="renderScoreTable()">
+            <option>2nd Term 2024</option><option>1st Term 2024</option><option>3rd Term 2023</option>
+          </select>
+          <select class="form-select" id="classSel" style="width:auto" onchange="renderScoreTable()">
+            <option value="SS2A">SS 2A</option><option value="SS2B">SS 2B</option>
+            <option value="JSS3A">JSS 3A</option><option value="JSS1B">JSS 1B</option>
+          </select>
+          <select class="form-select" id="subjectSel" style="width:auto" onchange="renderScoreTable()">
+            <option value="math">Mathematics</option><option value="eng">English Language</option>
+            <option value="bio">Biology</option><option value="chem">Chemistry</option>
+            <option value="phys">Physics</option><option value="econ">Economics</option>
+          </select>
+          <span style="font-size:12.5px;color:var(--text-light);margin-left:auto">CA Max: 40 | Exam Max: 60 | Total: 100</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Score table -->
+    <div class="card">
+      <div class="card-header">
+        <h3 id="scoreTableTitle">SS 2A — Mathematics — 2nd Term 2024</h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="showToast('Scores auto-saved','success')"><span class="material-icons">save</span>Save</button>
+          <button class="btn btn-primary btn-sm" onclick="showToast('Grades calculated successfully','success')">
+            <span class="material-icons">calculate</span>Calculate Grades
+          </button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Student</th>
+              <th>Test 1 <small>(10)</small></th><th>Test 2 <small>(10)</small></th>
+              <th>Assignment <small>(10)</small></th><th>Project <small>(10)</small></th>
+              <th>CA Total <small>(40)</small></th>
+              <th>Exam <small>(60)</small></th>
+              <th>Total <small>(100)</small></th>
+              <th>Grade</th><th>Position</th>
+            </tr>
+          </thead>
+          <tbody id="scoreBody"></tbody>
+          <tfoot>
+            <tr style="background:var(--bg);font-weight:700">
+              <td colspan="6" style="padding:11px 16px;font-size:13px;color:var(--text-medium)">Class Statistics</td>
+              <td style="padding:11px 16px;font-size:13px"><b>31.4</b></td>
+              <td style="padding:11px 16px;font-size:13px"><b>44.2</b></td>
+              <td style="padding:11px 16px;font-size:13px"><b>75.6</b> avg</td>
+              <td colspan="2" style="padding:11px 16px;font-size:13px;color:var(--text-light)">Highest: 98 | Lowest: 34</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Report Cards -->
+  <div id="panel-reports" style="display:none">
+    <div class="card">
+      <div class="card-header">
+        <h3>Generate Report Cards</h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="showToast('Bulk PDF generated for all classes','success')">
+            <span class="material-icons">picture_as_pdf</span>Bulk PDF
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="showToast('Report cards published to parent portal','success')">
+            <span class="material-icons">publish</span>Publish to Parents
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Sample Report Card Preview -->
+        <div id="reportCardPreview" style="max-width:680px;margin:0 auto;border:1px solid var(--border);border-radius:16px;overflow:hidden">
+
+          <!-- Header -->
+          <div style="background:linear-gradient(135deg,#0D47A1,#1976D2);padding:24px;text-align:center;color:white">
+            <div style="font-size:22px;font-weight:800;font-family:'Lexend',sans-serif">Greenfield Academy</div>
+            <div style="font-size:13px;opacity:0.8;margin-top:4px">No. 14 Education Lane, Ikeja, Lagos State, Nigeria</div>
+            <div style="font-size:16px;font-weight:700;font-family:'Lexend',sans-serif;margin-top:14px;
+              background:rgba(255,255,255,0.15);border-radius:8px;padding:8px 20px;display:inline-block">
+              STUDENT ACADEMIC REPORT
+            </div>
+            <div style="font-size:12px;opacity:0.75;margin-top:8px">2nd Term — Academic Session 2023/2024</div>
+          </div>
+
+          <!-- Student Info -->
+          <div style="padding:20px 24px;background:#F5F8FF;border-bottom:1px solid var(--border)">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;font-size:13px">
+              <div><span style="color:var(--text-light);font-size:11px;font-weight:700;display:block;text-transform:uppercase;letter-spacing:0.5px">Student Name</span><strong>Adaeze Obi</strong></div>
+              <div><span style="color:var(--text-light);font-size:11px;font-weight:700;display:block;text-transform:uppercase;letter-spacing:0.5px">Admission No.</span><strong>SM-2024-001</strong></div>
+              <div><span style="color:var(--text-light);font-size:11px;font-weight:700;display:block;text-transform:uppercase;letter-spacing:0.5px">Class</span><strong>SS 2A</strong></div>
+              <div><span style="color:var(--text-light);font-size:11px;font-weight:700;display:block;text-transform:uppercase;letter-spacing:0.5px">Total Students</span><strong>40</strong></div>
+              <div><span style="color:var(--text-light);font-size:11px;font-weight:700;display:block;text-transform:uppercase;letter-spacing:0.5px">Attendance</span><strong style="color:var(--success)">94% (47/50 days)</strong></div>
+              <div><span style="color:var(--text-light);font-size:11px;font-weight:700;display:block;text-transform:uppercase;letter-spacing:0.5px">Position</span><strong style="color:var(--primary)">3rd / 40</strong></div>
+            </div>
+          </div>
+
+          <!-- Subjects -->
+          <div style="padding:20px 24px">
+            <table style="width:100%;border-collapse:collapse;font-size:13px">
+              <thead>
+                <tr style="background:var(--bg)">
+                  <th style="padding:9px 12px;text-align:left;border:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-light)">Subject</th>
+                  <th style="padding:9px 12px;border:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-light)">CA(40)</th>
+                  <th style="padding:9px 12px;border:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-light)">Exam(60)</th>
+                  <th style="padding:9px 12px;border:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-light)">Total</th>
+                  <th style="padding:9px 12px;border:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-light)">Grade</th>
+                  <th style="padding:9px 12px;border:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-light)">Remark</th>
+                </tr>
+              </thead>
+              <tbody id="reportSubjects"></tbody>
+            </table>
+
+            <!-- Summary -->
+            <div style="margin-top:16px;padding:14px;background:var(--primary-soft);border-radius:10px">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center">
+                <div><div style="font-size:20px;font-weight:800;font-family:'Lexend',sans-serif;color:var(--primary)">84.6%</div><div style="font-size:11px;color:var(--text-light)">Average Score</div></div>
+                <div><div style="font-size:20px;font-weight:800;font-family:'Lexend',sans-serif;color:var(--success)">A</div><div style="font-size:11px;color:var(--text-light)">Overall Grade</div></div>
+                <div><div style="font-size:20px;font-weight:800;font-family:'Lexend',sans-serif;color:var(--primary)">3rd</div><div style="font-size:11px;color:var(--text-light)">Class Position</div></div>
+                <div><div style="font-size:20px;font-weight:800;font-family:'Lexend',sans-serif;color:var(--text-dark)">94%</div><div style="font-size:11px;color:var(--text-light)">Attendance</div></div>
+              </div>
+            </div>
+
+            <!-- Comments -->
+            <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+              <div style="padding:12px;border:1px solid var(--border);border-radius:10px">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-light);margin-bottom:6px">Class Teacher's Comment</div>
+                <div>Adaeze is an outstanding student who consistently demonstrates exceptional commitment. Keep up the excellent work!</div>
+                <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;display:flex;justify-content:space-between">
+                  <span style="font-size:11px;color:var(--text-light)">Mrs T. Okonkwo</span>
+                  <span style="font-size:11px;color:var(--text-light)">Sign: ___________</span>
+                </div>
+              </div>
+              <div style="padding:12px;border:1px solid var(--border);border-radius:10px">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-light);margin-bottom:6px">Principal's Comment</div>
+                <div>A very promising student. Continue to strive for excellence and maintain this standard next term.</div>
+                <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;display:flex;justify-content:space-between">
+                  <span style="font-size:11px;color:var(--text-light)">Mr O. Adeleke (Principal)</span>
+                  <span style="font-size:11px;color:var(--text-light)">Sign: ___________</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:14px;padding:12px 16px;border:1px dashed var(--border);border-radius:10px;font-size:12px;color:var(--text-light);text-align:center">
+              Next Term Begins: <strong>8th September 2024</strong> &nbsp;|&nbsp;
+              School Fees Due: <strong>Before 1st Week</strong> &nbsp;|&nbsp;
+              Contact: <strong>info@greenfield.edu.ng</strong>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:center;gap:12px;margin-top:20px">
+          <button class="btn btn-outline" onclick="showToast('Report card downloaded','success')"><span class="material-icons">download</span>Download PDF</button>
+          <button class="btn btn-primary" onclick="showToast('Report card sent to parent portal','success')"><span class="material-icons">send</span>Send to Parent</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Analytics -->
+  <div id="panel-analytics" style="display:none">
+    <div class="grid-2" style="gap:20px">
+      <div class="card">
+        <div class="card-header"><h3>Performance Trend</h3></div>
+        <div class="card-body"><div class="chart-wrap-lg"><canvas id="perfTrendChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Subject Radar — SS 2A</h3></div>
+        <div class="card-body"><div class="chart-wrap-lg"><canvas id="subjectRadar"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Grade Distribution</h3></div>
+        <div class="card-body"><div class="chart-wrap-lg"><canvas id="gradeDist"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Class Average Comparison</h3></div>
+        <div class="card-body">
+          <div id="classAvgBars"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<!-- Enter Result Modal -->
+<div class="modal-overlay" id="enterResultModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Enter Result Scores</h2>
+      <button class="icon-btn modal-close" onclick="closeModal('enterResultModal')"><span class="material-icons">close</span></button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Class</label>
+        <select class="form-select form-input"><option>SS 2A</option><option>SS 2B</option></select></div>
+      <div class="form-group"><label class="form-label">Subject</label>
+        <select class="form-select form-input"><option>Mathematics</option><option>English</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Term</label>
+        <select class="form-select form-input"><option>2nd Term 2024</option></select></div>
+      <div class="form-group"><label class="form-label">Score Type</label>
+        <select class="form-select form-input"><option>CA Score</option><option>Exam Score</option><option>Both</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('enterResultModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('enterResultModal');showToast('Result sheet opened for entry','success')">
+        <span class="material-icons">edit</span>Open Score Sheet
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../../js/layout.js"></script>
+<script src="../../js/app.js"></script>
+<script src="../../js/charts.js"></script>
+<script>
+initLayout({ role:'admin', activePage:'results', pageTitle:'Results & Exams' });
+initAnimations();
+
+// ---- Score Table ----
+const scoreData = [
+  { name:'Adaeze Obi',       t1:9, t2:10, asgn:9, proj:10, exam:55 },
+  { name:'Emeka Chukwu',     t1:7, t2:8,  asgn:7, proj:8,  exam:42 },
+  { name:'Fatima Aliyu',     t1:10,t2:9,  asgn:10,proj:9,  exam:58 },
+  { name:'Chidi Nwosu',      t1:5, t2:6,  asgn:5, proj:6,  exam:28 },
+  { name:'Blessing Eze',     t1:10,t2:10, asgn:9, proj:10, exam:59 },
+  { name:'Muhammed Garba',   t1:8, t2:7,  asgn:8, proj:7,  exam:46 },
+  { name:'Ngozi Okafor',     t1:9, t2:9,  asgn:8, proj:9,  exam:52 },
+  { name:'Tunde Adeleke',    t1:8, t2:8,  asgn:9, proj:8,  exam:48 },
+];
+
+function renderScoreTable() {
+  const sb = document.getElementById('scoreBody');
+  sb.innerHTML = '';
+  const sorted = [...scoreData].sort((a,b) => {
+    const ta = a.t1+a.t2+a.asgn+a.proj+a.exam;
+    const tb = b.t1+b.t2+b.asgn+b.proj+b.exam;
+    return tb - ta;
+  });
+  sorted.forEach((s, i) => {
+    const ca    = s.t1 + s.t2 + s.asgn + s.proj;
+    const total = ca + s.exam;
+    const g     = getGrade(total);
+    sb.innerHTML += `<tr>
+      <td style="color:var(--text-light);font-size:12px">${i+1}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="tbl-avatar" style="background:${avaColor(s.name)}">${getInitials(s.name)}</div>
+          <span class="tbl-name">${s.name}</span>
+        </div>
+      </td>
+      <td><input type="number" value="${s.t1}" min="0" max="10" class="neu-input" style="width:52px;text-align:center"></td>
+      <td><input type="number" value="${s.t2}" min="0" max="10" class="neu-input" style="width:52px;text-align:center"></td>
+      <td><input type="number" value="${s.asgn}" min="0" max="10" class="neu-input" style="width:52px;text-align:center"></td>
+      <td><input type="number" value="${s.proj}" min="0" max="10" class="neu-input" style="width:52px;text-align:center"></td>
+      <td style="font-weight:700;color:var(--primary)">${ca}</td>
+      <td><input type="number" value="${s.exam}" min="0" max="60" class="neu-input" style="width:60px;text-align:center"></td>
+      <td style="font-weight:800;font-family:'Lexend',sans-serif;font-size:15px">${total}</td>
+      <td><span class="badge ${g.cls}">${g.grade}</span></td>
+      <td style="font-weight:700;color:var(--text-medium)">${i+1}${['st','nd','rd'][i]||'th'}</td>
+    </tr>`;
+  });
+}
+renderScoreTable();
+
+// ---- Report Subjects ----
+const reportSubjs = [
+  { name:'Mathematics',      ca:38, exam:56 },
+  { name:'English Language', ca:36, exam:52 },
+  { name:'Biology',          ca:35, exam:50 },
+  { name:'Chemistry',        ca:33, exam:47 },
+  { name:'Physics',          ca:30, exam:44 },
+  { name:'Economics',        ca:37, exam:54 },
+  { name:'Civic Education',  ca:39, exam:57 },
+];
+const rsb = document.getElementById('reportSubjects');
+reportSubjs.forEach(sub => {
+  const total = sub.ca + sub.exam;
+  const g = getGrade(total);
+  const remarks = { A:'Excellent', B:'Good', C:'Average', D:'Pass', F:'Fail' };
+  const colors  = { A:'#2E7D32', B:'#1565C0', C:'#FF8F00', D:'#E65100', F:'#C62828' };
+  rsb.innerHTML += `<tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:9px 12px;border:1px solid var(--border)">${sub.name}</td>
+    <td style="padding:9px 12px;border:1px solid var(--border);text-align:center">${sub.ca}</td>
+    <td style="padding:9px 12px;border:1px solid var(--border);text-align:center">${sub.exam}</td>
+    <td style="padding:9px 12px;border:1px solid var(--border);text-align:center;font-weight:700">${total}</td>
+    <td style="padding:9px 12px;border:1px solid var(--border);text-align:center">
+      <span style="font-weight:800;font-family:'Lexend',sans-serif;color:${colors[g.grade]}">${g.grade}</span>
+    </td>
+    <td style="padding:9px 12px;border:1px solid var(--border);color:${colors[g.grade]}">${remarks[g.grade]}</td>
+  </tr>`;
+});
+
+// ---- Class Avg Bars ----
+const classAvgs = [
+  { cls:'SS 3A', avg:74, color:'var(--success)' },
+  { cls:'SS 2A', avg:70, color:'var(--success)' },
+  { cls:'SS 1B', avg:67, color:'var(--primary)' },
+  { cls:'SS 2B', avg:65, color:'var(--primary)' },
+  { cls:'JSS 3A',avg:62, color:'var(--warning)' },
+  { cls:'JSS 2B',avg:58, color:'var(--warning)' },
+];
+const cab = document.getElementById('classAvgBars');
+classAvgs.forEach(c => {
+  cab.innerHTML += `<div style="margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+      <span style="font-size:13px;font-weight:600">${c.cls}</span>
+      <span style="font-size:13px;font-weight:700;color:var(--text-dark)">${c.avg}%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" data-w="${c.avg}%" style="background:${c.color}"></div></div>
+  </div>`;
+});
+
+// ---- Tab Switching ----
+function switchTab(tab) {
+  ['entry','reports','analytics'].forEach(t => {
+    document.getElementById(`panel-${t}`).style.display = t === tab ? 'block' : 'none';
+    const btn = document.getElementById(`tab-${t}`);
+    btn.className = t === tab ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
+  });
+  if (tab === 'analytics') {
+    chartPerformanceTrend('perfTrendChart');
+    chartSubjectRadar('subjectRadar');
+    chartGrades('gradeDist');
+  }
+}
+
+// Animate progress bars
+document.querySelectorAll('.progress-fill[data-w]').forEach(b => {
+  const w = b.dataset.w; b.style.width = '0';
+  setTimeout(() => b.style.width = w, 400);
+});
+</script>
+
+<!-- Broadsheet Modal -->
+<div class="modal-overlay" id="broadsheetModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2>Class Broadsheet</h2>
+      <button class="icon-btn modal-close" onclick="closeModal('broadsheetModal')">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+      <select class="form-select" style="width:auto;height:36px;font-size:13px">
+        <option>SS 2A</option><option>SS 2B</option><option>SS 1A</option><option>JSS 3B</option>
+      </select>
+      <select class="form-select" style="width:auto;height:36px;font-size:13px">
+        <option>2nd Term 2024</option><option>1st Term 2024</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="showToast('Broadsheet downloaded as Excel','success')">
+        <span class="material-icons">download</span>Export Excel
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="showToast('Broadsheet PDF ready','success')">
+        <span class="material-icons">picture_as_pdf</span>Export PDF
+      </button>
+    </div>
+    <div style="overflow-x:auto;max-height:420px">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px">
+        <thead style="position:sticky;top:0;background:var(--primary);color:white">
+          <tr>
+            <th style="padding:8px 12px;text-align:left;font-weight:700">Student</th>
+            <th style="padding:8px 8px;text-align:center">Math</th>
+            <th style="padding:8px 8px;text-align:center">English</th>
+            <th style="padding:8px 8px;text-align:center">Biology</th>
+            <th style="padding:8px 8px;text-align:center">Chemistry</th>
+            <th style="padding:8px 8px;text-align:center">Physics</th>
+            <th style="padding:8px 8px;text-align:center">Economics</th>
+            <th style="padding:8px 8px;text-align:center">Civic Ed</th>
+            <th style="padding:8px 8px;text-align:center">Total</th>
+            <th style="padding:8px 8px;text-align:center">Avg</th>
+            <th style="padding:8px 8px;text-align:center">Pos</th>
+          </tr>
+        </thead>
+        <tbody id="broadsheetBody"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('broadsheetModal')">Close</button>
+      <button class="btn btn-primary" onclick="showToast('All report cards sent to parents','success')">
+        <span class="material-icons">send</span>Send Report Cards to Parents
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Populate broadsheet
+const bsStudents = [
+  { name:'Adaeze Obi',      scores:[94,88,85,80,74,91,96] },
+  { name:'Emeka Chukwu',    scores:[72,68,65,60,58,70,74] },
+  { name:'Fatima Aliyu',    scores:[90,86,88,82,79,88,92] },
+  { name:'Chidi Nwosu',     scores:[48,52,45,44,41,50,55] },
+  { name:'Blessing Eze',    scores:[92,89,88,85,80,90,95] },
+  { name:'Ngozi Okafor',    scores:[72,68,65,60,58,70,74] },
+  { name:'Tunde Adeleke',   scores:[76,72,70,65,62,74,78] },
+  { name:'Amina Bello',     scores:[62,60,58,55,52,62,66] },
+];
+const ranked = bsStudents.map(s => {
+  const total = s.scores.reduce((a,b) => a+b, 0);
+  return { ...s, total, avg: (total / s.scores.length).toFixed(1) };
+}).sort((a,b) => b.total - a.total);
+
+const bsBody = document.getElementById('broadsheetBody');
+ranked.forEach((s, i) => {
+  const pos = i + 1;
+  bsBody.innerHTML += `
+    <tr style="border-bottom:1px solid var(--border-soft);background:${i%2===0?'var(--bg)':'transparent'}">
+      <td style="padding:8px 12px;font-weight:600;font-size:13px">${s.name}</td>
+      ${s.scores.map(sc => `<td style="padding:8px;text-align:center;font-weight:600;
+        color:${sc>=75?'var(--success)':sc>=50?'var(--primary)':'var(--danger)'}">${sc}</td>`).join('')}
+      <td style="padding:8px;text-align:center;font-weight:800;font-family:'Lexend',sans-serif;color:var(--primary)">${s.total}</td>
+      <td style="padding:8px;text-align:center;font-weight:700">${s.avg}%</td>
+      <td style="padding:8px;text-align:center;font-weight:800;color:${pos<=3?'var(--accent)':'var(--text-medium)'}">${pos}</td>
+    </tr>`;
+});
+</script>
+
+</body>
+</html>

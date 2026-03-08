@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Notifications — EduNigeria SMS</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="sb-overlay" class="sb-overlay"></div>
+<aside id="sidebar" class="sidebar"></aside>
+<div class="main-wrap">
+<header id="navbar" class="navbar"></header>
+<main class="page-content">
+
+  <div class="pg-header">
+    <div class="breadcrumb">
+      <a href="dashboard.html">Home</a>
+      <span class="material-icons">chevron_right</span><span>Notifications</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1>Notifications</h1>
+        <p id="unreadLabel">12 unread notifications across all categories</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-outline btn-sm" onclick="markAllRead()">
+          <span class="material-icons">done_all</span>Mark All Read
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="clearAll()">
+          <span class="material-icons">delete_sweep</span>Clear All
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category filter tabs -->
+  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:22px" id="notifTabs">
+    <button class="notif-tab active" onclick="filterNotifs('all')"      data-cat="all">
+      All <span class="notif-count" id="cnt-all">18</span>
+    </button>
+    <button class="notif-tab" onclick="filterNotifs('academic')"        data-cat="academic">
+      Academic <span class="notif-count" id="cnt-academic">5</span>
+    </button>
+    <button class="notif-tab" onclick="filterNotifs('finance')"         data-cat="finance">
+      Finance <span class="notif-count" id="cnt-finance">4</span>
+    </button>
+    <button class="notif-tab" onclick="filterNotifs('attendance')"      data-cat="attendance">
+      Attendance <span class="notif-count" id="cnt-attendance">3</span>
+    </button>
+    <button class="notif-tab" onclick="filterNotifs('admin')"           data-cat="admin">
+      Admin <span class="notif-count" id="cnt-admin">4</span>
+    </button>
+    <button class="notif-tab" onclick="filterNotifs('system')"          data-cat="system">
+      System <span class="notif-count" id="cnt-system">2</span>
+    </button>
+  </div>
+
+  <div style="display:grid;gap:16px">
+    <!-- Grouped: Today -->
+    <div id="group-today">
+      <div style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;
+        color:var(--text-light);margin-bottom:10px;padding-left:4px">Today</div>
+      <div class="card" style="padding:0;overflow:hidden" id="list-today"></div>
+    </div>
+
+    <!-- Grouped: Yesterday -->
+    <div id="group-yesterday">
+      <div style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;
+        color:var(--text-light);margin-bottom:10px;padding-left:4px">Yesterday</div>
+      <div class="card" style="padding:0;overflow:hidden" id="list-yesterday"></div>
+    </div>
+
+    <!-- Grouped: This Week -->
+    <div id="group-week">
+      <div style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;
+        color:var(--text-light);margin-bottom:10px;padding-left:4px">Earlier This Week</div>
+      <div class="card" style="padding:0;overflow:hidden" id="list-week"></div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script src="../../js/layout.js"></script>
+<script src="../../js/app.js"></script>
+<script>
+initLayout({ role:'admin', activePage:'notifications', pageTitle:'Notifications' });
+
+const NOTIFS = [
+  // Today
+  { id:1,  group:'today',     cat:'attendance', read:false, icon:'event_busy',     color:'#C62828', bg:'#FFEBEE',
+    title:'Chronic Absentee Alert',
+    body:'3 students in JSS 2B have missed 5+ consecutive days. Immediate parent contact recommended.',
+    time:'10 min ago', link:'attendance.html' },
+  { id:2,  group:'today',     cat:'finance',    read:false, icon:'payments',        color:'#FF8F00', bg:'#FFF8E1',
+    title:'Fee Payment Received',
+    body:'₦45,000 payment recorded for Adaeze Obi (SM-2024-001) via Bank Transfer. Receipt #RCP-2847 issued.',
+    time:'34 min ago', link:'fees.html' },
+  { id:3,  group:'today',     cat:'academic',   read:false, icon:'quiz',            color:'#0D47A1', bg:'#E3F2FD',
+    title:'CBT Exam Submitted',
+    body:'SS 2A Mathematics CBT exam completed. 38/40 students submitted. Results available for review.',
+    time:'1 hr ago', link:'cbt.html' },
+  { id:4,  group:'today',     cat:'admin',      read:false, icon:'person_add',      color:'#2E7D32', bg:'#E8F5E9',
+    title:'New Admission Application',
+    body:'Chukwuemeka Eze has submitted an application for JSS 1. Documents are pending verification.',
+    time:'2 hrs ago', link:'admission.html' },
+  { id:5,  group:'today',     cat:'academic',   read:true,  icon:'assignment_late', color:'#E65100', bg:'#FFF3E0',
+    title:'Assignment Deadline Missed',
+    body:'12 students in JSS 3A did not submit their Civic Education essay before the 3 Jun deadline.',
+    time:'3 hrs ago', link:'assignments.html' },
+
+  // Yesterday
+  { id:6,  group:'yesterday', cat:'finance',    read:false, icon:'warning',         color:'#C62828', bg:'#FFEBEE',
+    title:'Fee Defaulters — 2nd Term',
+    body:'34 students have outstanding 2nd term balances totalling ₦1.53M. Deadline is June 30.',
+    time:'Yesterday 4:22 PM', link:'fees.html' },
+  { id:7,  group:'yesterday', cat:'attendance', read:false, icon:'event_available', color:'#2E7D32', bg:'#E8F5E9',
+    title:'Attendance Summary — 2 Jun',
+    body:"Yesterday's school-wide attendance: 94.2% (1,237/1,312). 3 classes achieved 100% attendance.",
+    time:'Yesterday 3:00 PM', link:'attendance.html' },
+  { id:8,  group:'yesterday', cat:'admin',      read:true,  icon:'forum',           color:'#6A1B9A', bg:'#F3E5F5',
+    title:'New Parent Message',
+    body:'Mrs Chioma Obi sent a message regarding Adaeze\'s exam preparation. Unread in Communication inbox.',
+    time:'Yesterday 11:15 AM', link:'communication.html' },
+  { id:9,  group:'yesterday', cat:'academic',   read:true,  icon:'grade',           color:'#0D47A1', bg:'#E3F2FD',
+    title:'Results Entry Reminder',
+    body:'3 teachers have not yet uploaded 2nd term scores for their classes. Deadline: 7 June.',
+    time:'Yesterday 9:00 AM', link:'results.html' },
+
+  // This week
+  { id:10, group:'week',      cat:'system',     read:true,  icon:'backup',          color:'#00695C', bg:'#E0F2F1',
+    title:'Data Backup Completed',
+    body:'Automatic nightly backup completed successfully. All student records, fees and results secured.',
+    time:'1 Jun 11:59 PM', link:null },
+  { id:11, group:'week',      cat:'finance',    read:true,  icon:'account_balance',  color:'#0D47A1', bg:'#E3F2FD',
+    title:'Monthly Fee Report Ready',
+    body:'May 2024 fee collection report is ready. Total collected: ₦23.65M (81.3% of expected).',
+    time:'1 Jun 8:00 AM', link:'analytics.html' },
+  { id:12, group:'week',      cat:'admin',      read:true,  icon:'badge',            color:'#6A1B9A', bg:'#F3E5F5',
+    title:'Staff Leave Approved',
+    body:"Mr Kayode Osei's sick leave request (3–5 June) has been approved. Cover arranged for Physics classes.",
+    time:'31 May 2:30 PM', link:'teachers.html' },
+  { id:13, group:'week',      cat:'attendance', read:true,  icon:'sms',              color:'#E65100', bg:'#FFF3E0',
+    title:'Bulk SMS Sent to Parents',
+    body:'Attendance reminder sent to 127 parents whose children had below 80% attendance in May.',
+    time:'31 May 10:00 AM', link:'communication.html' },
+  { id:14, group:'week',      cat:'academic',   read:true,  icon:'local_library',    color:'#00695C', bg:'#E0F2F1',
+    title:'Overdue Library Books',
+    body:'23 students have books overdue by 7+ days. Total fines accrued: ₦16,100. Reminder SMS sent.',
+    time:'30 May 9:00 AM', link:'library.html' },
+  { id:15, group:'week',      cat:'academic',   read:true,  icon:'schedule',         color:'#FF8F00', bg:'#FFF8E1',
+    title:'Timetable Updated — Week 6',
+    body:'The SS 3 exam preparation timetable has been updated. All class teachers have been notified.',
+    time:'30 May 8:30 AM', link:'timetable.html' },
+  { id:16, group:'week',      cat:'finance',    read:true,  icon:'receipt',          color:'#2E7D32', bg:'#E8F5E9',
+    title:'Payroll Processed',
+    body:'May 2024 staff payroll of ₦8.4M processed and transferred. 70 staff members paid.',
+    time:'29 May 3:00 PM', link:'teachers.html' },
+  { id:17, group:'week',      cat:'admin',      read:true,  icon:'inventory_2',      color:'#0277BD', bg:'#E3F2FD',
+    title:'Low Stock Alert — Football',
+    body:'Football stock is at 3/8 (38%). Consider reordering to avoid shortage for sports activities.',
+    time:'29 May 11:00 AM', link:'inventory.html' },
+  { id:18, group:'week',      cat:'system',     read:true,  icon:'update',           color:'#0D47A1', bg:'#E3F2FD',
+    title:'System Update Scheduled',
+    body:'EduNigeria SMS v2.4 maintenance update scheduled for Sunday 9 June at 1:00 AM. Downtime: ~30 min.',
+    time:'28 May 10:00 AM', link:null },
+];
+
+let activeFilter = 'all';
+
+function renderNotifs(notifs) {
+  ['today','yesterday','week'].forEach(g => {
+    const el   = document.getElementById(`list-${g}`);
+    const grp  = document.getElementById(`group-${g}`);
+    const list = notifs.filter(n => n.group === g);
+    grp.style.display = list.length ? 'block' : 'none';
+    el.innerHTML = '';
+    list.forEach(n => renderNotifRow(el, n));
+  });
+}
+
+function renderNotifRow(container, n) {
+  container.innerHTML += `
+    <div id="notif-${n.id}" style="display:flex;align-items:flex-start;gap:14px;
+      padding:16px 20px;border-bottom:1px solid var(--border-soft);
+      background:${n.read ? 'transparent' : 'var(--bg)'};
+      cursor:pointer;transition:background 0.18s"
+      onmouseover="this.style.background='var(--primary-soft)'"
+      onmouseout="this.style.background='${n.read ? 'transparent' : 'var(--bg)'}'"
+      onclick="readNotif(${n.id}${n.link ? `,'${n.link}'` : ''})">
+
+      <!-- Icon -->
+      <div style="width:42px;height:42px;border-radius:13px;background:${n.bg};
+        display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <span class="material-icons" style="color:${n.color};font-size:20px">${n.icon}</span>
+      </div>
+
+      <!-- Content -->
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:4px">
+          <span style="font-size:13.5px;font-weight:${n.read ? '500' : '700'};
+            color:var(--text-dark);flex:1">${n.title}</span>
+          <span style="font-size:11px;color:var(--text-light);white-space:nowrap;flex-shrink:0">${n.time}</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--text-medium);line-height:1.6">${n.body}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+          <span style="font-size:10.5px;padding:2px 9px;border-radius:20px;font-weight:700;
+            background:${n.bg};color:${n.color};text-transform:capitalize">${n.cat}</span>
+          ${n.link ? `<span style="font-size:11.5px;color:var(--primary);font-weight:600">View →</span>` : ''}
+          ${!n.read ? `<span style="width:7px;height:7px;border-radius:50%;background:${n.color};
+            display:inline-block;margin-left:auto;flex-shrink:0"></span>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function filterNotifs(cat) {
+  activeFilter = cat;
+  document.querySelectorAll('.notif-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.cat === cat);
+  });
+  const filtered = cat === 'all' ? NOTIFS : NOTIFS.filter(n => n.cat === cat);
+  renderNotifs(filtered);
+}
+
+function readNotif(id, link) {
+  const n = NOTIFS.find(n => n.id === id);
+  if (n) n.read = true;
+  updateCounts();
+  if (link) { window.location.href = link; }
+  else { filterNotifs(activeFilter); }
+}
+
+function markAllRead() {
+  NOTIFS.forEach(n => n.read = true);
+  updateCounts();
+  filterNotifs(activeFilter);
+  showToast('All notifications marked as read', 'success');
+}
+
+function clearAll() {
+  NOTIFS.length = 0;
+  ['today','yesterday','week'].forEach(g => {
+    document.getElementById(`group-${g}`).style.display = 'none';
+  });
+  showToast('All notifications cleared', 'success');
+  updateCounts();
+}
+
+function updateCounts() {
+  const cats = ['all','academic','finance','attendance','admin','system'];
+  cats.forEach(c => {
+    const count = c === 'all'
+      ? NOTIFS.filter(n => !n.read).length
+      : NOTIFS.filter(n => n.cat === c && !n.read).length;
+    const el = document.getElementById(`cnt-${c}`);
+    if (el) {
+      el.textContent = count;
+      el.style.display = count > 0 ? 'inline-flex' : 'none';
+    }
+  });
+  const total = NOTIFS.filter(n => !n.read).length;
+  document.getElementById('unreadLabel').textContent =
+    total > 0
+      ? `${total} unread notification${total !== 1 ? 's' : ''} across all categories`
+      : 'All notifications read — you\'re up to date ✓';
+}
+
+// Initial render
+filterNotifs('all');
+updateCounts();
+</script>
+
+<style>
+.notif-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-medium);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.notif-tab:hover { border-color: var(--primary); color: var(--primary); }
+.notif-tab.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+.notif-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.25);
+  font-size: 11px;
+  font-weight: 800;
+}
+.notif-tab:not(.active) .notif-count {
+  background: var(--danger);
+  color: white;
+}
+</style>
+</body>
+</html>

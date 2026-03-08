@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Attendance — EduNigeria SMS</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="sb-overlay" class="sb-overlay"></div>
+<aside id="sidebar" class="sidebar"></aside>
+<div class="main-wrap">
+<header id="navbar" class="navbar"></header>
+<main class="page-content">
+
+  <div class="pg-header">
+    <div class="breadcrumb">
+      <a href="dashboard.html">Home</a>
+      <span class="material-icons">chevron_right</span><span>Attendance</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1>Attendance Management</h1>
+        <p>Mark, track and report student & staff attendance across all classes</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-outline btn-sm"><span class="material-icons">download</span>Export Report</button>
+        <button class="btn btn-primary" onclick="openModal('notifyModal')">
+          <span class="material-icons">send</span>Notify Parents
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#E8F5E9"><span class="material-icons" style="color:#2E7D32;font-size:24px">check_circle</span></div>
+      <div class="stat-value" data-count="1022">1,022</div>
+      <div class="stat-label">Present Today</div>
+      <div class="stat-change change-up"><span class="material-icons">trending_up</span>78% of school</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#FFEBEE"><span class="material-icons" style="color:#C62828;font-size:24px">cancel</span></div>
+      <div class="stat-value" data-count="197">197</div>
+      <div class="stat-label">Absent Today</div>
+      <div class="stat-change change-down"><span class="material-icons">trending_down</span>-14 vs yesterday</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#FFF3E0"><span class="material-icons" style="color:#E65100;font-size:24px">schedule</span></div>
+      <div class="stat-value" data-count="93">93</div>
+      <div class="stat-label">Late Arrivals</div>
+      <div class="stat-change change-down"><span class="material-icons">trending_down</span>7% of school</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#F3E5F5"><span class="material-icons" style="color:#6A1B9A;font-size:24px">bar_chart</span></div>
+      <div class="stat-value" data-count="94.2" data-suffix="%">94.2%</div>
+      <div class="stat-label">Monthly Average</div>
+      <div class="stat-change change-up"><span class="material-icons">trending_up</span>+1.4% vs last month</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="gap:20px;margin-bottom:24px">
+
+    <!-- Mark Attendance Panel -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>Mark Attendance</h3>
+          <p style="font-size:12px;color:var(--text-light);margin-top:2px">Monday, 3rd June 2024</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select class="form-select" id="classSelect" style="height:34px;font-size:12px" onchange="loadClassAttendance()">
+            <option value="SS2A">SS 2A (40 students)</option>
+            <option value="SS2B">SS 2B (38 students)</option>
+            <option value="SS1A">SS 1A (42 students)</option>
+            <option value="JSS3A">JSS 3A (44 students)</option>
+            <option value="JSS1B">JSS 1B (39 students)</option>
+          </select>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <!-- Bulk actions -->
+        <div style="padding:12px 18px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center">
+          <span style="font-size:12.5px;font-weight:600;color:var(--text-medium)">Mark all as:</span>
+          <button class="btn btn-sm" style="background:var(--success-light);color:var(--success)" onclick="markAll('present')">
+            <span class="material-icons">done_all</span>Present
+          </button>
+          <button class="btn btn-sm" style="background:var(--danger-light);color:var(--danger)" onclick="markAll('absent')">
+            <span class="material-icons">remove_done</span>Absent
+          </button>
+          <span id="markedCount" style="margin-left:auto;font-size:12px;color:var(--text-light)">0 / 40 marked</span>
+        </div>
+
+        <!-- Student list -->
+        <div id="attendanceList" style="max-height:400px;overflow-y:auto"></div>
+
+        <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn btn-outline">Reset</button>
+          <button class="btn btn-primary" onclick="submitAttendance()">
+            <span class="material-icons">save</span>Save Attendance
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attendance Calendar + Stats -->
+    <div style="display:flex;flex-direction:column;gap:18px">
+
+      <!-- Mini Calendar -->
+      <div class="card">
+        <div class="card-header">
+          <h3>June 2024 Attendance</h3>
+          <div style="display:flex;gap:6px">
+            <button class="icon-btn"><span class="material-icons">chevron_left</span></button>
+            <button class="icon-btn"><span class="material-icons">chevron_right</span></button>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Day headers -->
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px">
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-light);padding:4px">S</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-light);padding:4px">M</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-light);padding:4px">T</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-light);padding:4px">W</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-light);padding:4px">T</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-light);padding:4px">F</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-light);padding:4px">S</div>
+          </div>
+          <div class="att-cal" id="attendanceCal"></div>
+          <!-- Legend -->
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px">
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-medium)">
+              <div style="width:12px;height:12px;border-radius:3px;background:var(--success-light);border:1px solid var(--success)"></div>Present
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-medium)">
+              <div style="width:12px;height:12px;border-radius:3px;background:var(--danger-light);border:1px solid var(--danger)"></div>Absent
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-medium)">
+              <div style="width:12px;height:12px;border-radius:3px;background:var(--accent-light);border:1px solid var(--accent)"></div>Holiday
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-medium)">
+              <div style="width:12px;height:12px;border-radius:3px;background:var(--primary);"></div>Today
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attendance by Class chart -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Attendance by Class</h3>
+          <span class="badge badge-primary">June 2024</span>
+        </div>
+        <div class="card-body" style="padding:14px">
+          <div class="chart-wrap-lg"><canvas id="attByClassChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chronic Absentee Alert -->
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--danger-light);display:flex;align-items:center;justify-content:center">
+          <span class="material-icons" style="color:var(--danger);font-size:20px">warning</span>
+        </div>
+        <div>
+          <h3>Chronic Absentee Alert</h3>
+          <p style="font-size:12px;color:var(--text-light);margin-top:1px">Students absent 3+ consecutive days — parent notification required</p>
+        </div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="showToast('Bulk SMS sent to 6 parents','success')">
+        <span class="material-icons">send</span>Send All SMS
+      </button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Student</th><th>Class</th><th>Days Absent</th><th>Last Seen</th><th>Parent</th><th>Parent Phone</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="absenteeBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Attendance Chart Trend -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Monthly Attendance Trend</h3>
+      <select class="form-select" style="width:auto;height:34px;font-size:12px">
+        <option>All Classes</option><option>SS 2A</option><option>JSS 3A</option>
+      </select>
+    </div>
+    <div class="card-body">
+      <div class="chart-wrap-lg"><canvas id="attTrendChart"></canvas></div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<!-- Notify Modal -->
+<div class="modal-overlay" id="notifyModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Notify Absent Parents</h2>
+      <button class="icon-btn modal-close" onclick="closeModal('notifyModal')"><span class="material-icons">close</span></button>
+    </div>
+    <div style="background:var(--warning-light);border:1px solid #FFCC80;border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:var(--warning);display:flex;gap:10px">
+      <span class="material-icons" style="font-size:18px">info</span>
+      <span><b>197 students</b> are absent today. SMS notifications will be sent to their registered parents.</span>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Message Template</label>
+      <textarea class="form-input form-textarea">Dear Parent, your ward [Student Name] was absent from school today, [Date]. Please ensure they attend school tomorrow. Contact us: 08XXXXXXXXX. — Greenfield Academy</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Send Via</label>
+      <div style="display:flex;gap:12px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13.5px"><input type="checkbox" checked> SMS</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13.5px"><input type="checkbox" checked> Email</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13.5px"><input type="checkbox"> WhatsApp</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('notifyModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('notifyModal');showToast('Notifications sent to 197 parents','success')">
+        <span class="material-icons">send</span>Send to 197 Parents
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../../js/layout.js"></script>
+<script src="../../js/app.js"></script>
+<script src="../../js/charts.js"></script>
+<script>
+initLayout({ role:'admin', activePage:'attendance', pageTitle:'Attendance' });
+initAnimations();
+
+// ---- Attendance List ----
+const classStudents = [
+  'Adaeze Obi','Emeka Chukwu','Fatima Aliyu','Chidi Nwosu','Blessing Eze',
+  'Muhammed Garba','Ngozi Okafor','Tunde Adeleke','Amina Bello','Ifeanyi Okeke',
+  'Zainab Musa','Oluwaseun Adeyemi','Chioma Eze','David Okonkwo','Rashidat Yusuf',
+  'Obinna Nwofor','Halima Sani','Uchenna Obi','Kelechi Agu','Miriam Adebayo'
+];
+
+const attState = {};
+classStudents.forEach(n => attState[n] = 'present');
+
+function loadClassAttendance() {
+  const list = document.getElementById('attendanceList');
+  list.innerHTML = '';
+  classStudents.forEach((name, i) => {
+    list.innerHTML += `<div style="display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border-soft)" id="row_${i}">
+      <div style="width:34px;height:34px;border-radius:10px;background:${avaColor(name)};display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;flex-shrink:0">${getInitials(name)}</div>
+      <div style="flex:1">
+        <div style="font-size:13.5px;font-weight:600;color:var(--text-dark)">${name}</div>
+        <div style="font-size:11px;color:var(--text-light)">SM-2024-0${String(i+1).padStart(2,'0')}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="setAtt(${i},'present','${name}')" class="btn btn-sm" id="p_${i}"
+          style="background:var(--success-light);color:var(--success);padding:5px 10px">
+          <span class="material-icons" style="font-size:14px">check</span>P
+        </button>
+        <button onclick="setAtt(${i},'late','${name}')" class="btn btn-sm" id="l_${i}"
+          style="background:var(--warning-light);color:var(--warning);padding:5px 10px">
+          <span class="material-icons" style="font-size:14px">schedule</span>L
+        </button>
+        <button onclick="setAtt(${i},'absent','${name}')" class="btn btn-sm" id="a_${i}"
+          style="background:#ECEFF1;color:var(--text-light);padding:5px 10px">
+          <span class="material-icons" style="font-size:14px">close</span>A
+        </button>
+      </div>
+    </div>`;
+  });
+  updateCount();
+}
+
+function setAtt(i, status, name) {
+  attState[name] = status;
+  const colors = { present:'var(--success)', late:'var(--warning)', absent:'var(--text-light)' };
+  const bgs    = { present:'var(--success-light)', late:'var(--warning-light)', absent:'#ECEFF1' };
+  ['p','l','a'].forEach(key => {
+    const btn = document.getElementById(`${key}_${i}`);
+    if (btn) { btn.style.background='#ECEFF1'; btn.style.color='var(--text-light)'; }
+  });
+  const map = { present:'p', late:'l', absent:'a' };
+  const active = document.getElementById(`${map[status]}_${i}`);
+  if (active) { active.style.background = bgs[status]; active.style.color = colors[status]; }
+  updateCount();
+}
+
+function markAll(status) {
+  classStudents.forEach((n, i) => setAtt(i, status, n));
+}
+
+function updateCount() {
+  const present = Object.values(attState).filter(v => v === 'present').length;
+  document.getElementById('markedCount').textContent = `${present} / ${classStudents.length} present`;
+}
+
+function submitAttendance() {
+  showToast('Attendance saved successfully for SS 2A', 'success');
+}
+
+loadClassAttendance();
+
+// ---- Calendar ----
+const calData = {
+  1:'weekend',2:'weekend',3:'present',4:'present',5:'present',
+  6:'present',7:'present',8:'weekend',9:'weekend',10:'present',
+  11:'present',12:'present',13:'holiday',14:'present',15:'weekend',
+  16:'weekend',17:'present',18:'present',19:'present',20:'present',
+  21:'present',22:'weekend',23:'weekend',24:'present',25:'present',
+  26:'present',27:'present',28:'present',29:'weekend',30:'weekend',
+};
+// Offset: June 2024 starts Saturday (6 empties before it)
+const calEl = document.getElementById('attendanceCal');
+[...Array(6)].forEach(() => calEl.innerHTML += `<div class="cal-day empty"></div>`);
+for (let d = 1; d <= 30; d++) {
+  const cls = d === 3 ? 'today' : (calData[d] || 'weekend');
+  calEl.innerHTML += `<div class="cal-day ${cls}" title="${d} June">${d}</div>`;
+}
+
+// ---- Absentees ----
+const absentees = [
+  { name:'Amina Bello', class:'JSS 3A', days:5, last:'28 May', parent:'Hajiya N. Bello', phone:'0803-XXX-1234' },
+  { name:'Chidi Nwosu', class:'JSS 1A', days:4, last:'29 May', parent:'Mrs R. Nwosu', phone:'0806-XXX-5678' },
+  { name:'Rashidat Yusuf', class:'SS 2B', days:3, last:'30 May', parent:'Alhaja F. Yusuf', phone:'0812-XXX-9012' },
+  { name:'Peter Okafor', class:'SS 1C', days:3, last:'30 May', parent:'Mr I. Okafor', phone:'0705-XXX-3456' },
+];
+const ab = document.getElementById('absenteeBody');
+absentees.forEach(a => {
+  ab.innerHTML += `<tr>
+    <td>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="tbl-avatar" style="background:${avaColor(a.name)}">${getInitials(a.name)}</div>
+        <span class="tbl-name">${a.name}</span>
+      </div>
+    </td>
+    <td><span class="badge badge-primary">${a.class}</span></td>
+    <td><span class="badge badge-danger">${a.days} days</span></td>
+    <td style="color:var(--text-light);font-size:13px">${a.last}</td>
+    <td style="font-size:13px">${a.parent}</td>
+    <td style="font-size:13px">${a.phone}</td>
+    <td>
+      <div class="tbl-actions">
+        <button class="icon-btn" title="Send SMS" onclick="showToast('SMS sent to ${a.parent}','success')"><span class="material-icons">sms</span></button>
+        <button class="icon-btn" title="Call"><span class="material-icons">phone</span></button>
+        <button class="icon-btn" title="View profile"><span class="material-icons">visibility</span></button>
+      </div>
+    </td>
+  </tr>`;
+});
+
+// ---- Charts ----
+chartAttByClass('attByClassChart');
+
+// Trend Chart
+new Chart(document.getElementById('attTrendChart'), {
+  type:'line',
+  data:{
+    labels:['Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun'],
+    datasets:[
+      { label:'Present %', data:[91,89,93,87,94,92,95,93,94,94.2],
+        borderColor:'#2E7D32', backgroundColor:'rgba(46,125,50,0.08)',
+        tension:0.4, borderWidth:2.5, fill:true, pointBackgroundColor:'#2E7D32', pointRadius:4 },
+      { label:'Target (95%)', data:[95,95,95,95,95,95,95,95,95,95],
+        borderColor:'#FF8F00', borderDash:[6,4], borderWidth:1.5,
+        tension:0, fill:false, pointRadius:0 },
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ position:'top', labels:{ font:{family:"'DM Sans',sans-serif",size:11}, usePointStyle:true }}},
+    scales:{
+      x:{ grid:{display:false}, ticks:{ font:{size:11}, color:'#78909C' }},
+      y:{ min:75, max:100, grid:{color:'#F0F4FF'},
+        ticks:{ font:{size:11}, color:'#78909C', callback: v => v+'%' }}
+    }
+  }
+});
+</script>
+</body>
+</html>

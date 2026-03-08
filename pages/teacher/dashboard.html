@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Teacher Dashboard — EduNigeria SMS</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="sb-overlay" class="sb-overlay"></div>
+<aside id="sidebar" class="sidebar"></aside>
+<div class="main-wrap">
+<header id="navbar" class="navbar"></header>
+<main class="page-content">
+
+  <div class="pg-header">
+    <div class="breadcrumb">
+      <a href="../admin/dashboard.html">Admin</a>
+      <span class="material-icons">chevron_right</span><span>Teacher Portal</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1>Welcome, Mrs T. Okonkwo 👩‍🏫</h1>
+        <p>Mathematics Teacher · Class Teacher SS 2A · Monday, 3rd June 2024</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-outline btn-sm" onclick="openModal('timetableModal')">
+          <span class="material-icons">calendar_month</span>My Timetable
+        </button>
+        <button class="btn btn-primary" onclick="openModal('markAttModal')">
+          <span class="material-icons">how_to_reg</span>Mark Attendance
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#E3F2FD">
+        <span class="material-icons" style="color:#0D47A1;font-size:24px">people</span>
+      </div>
+      <div class="stat-value" data-count="40">40</div>
+      <div class="stat-label">My Class (SS 2A)</div>
+      <div class="stat-change change-up"><span class="material-icons">trending_up</span>22 female · 18 male</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#E8F5E9">
+        <span class="material-icons" style="color:#2E7D32;font-size:24px">event_available</span>
+      </div>
+      <div class="stat-value" data-count="37">37</div>
+      <div class="stat-label">Present Today (SS 2A)</div>
+      <div class="stat-change change-up"><span class="material-icons">trending_up</span>92.5% attendance</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#FFF8E1">
+        <span class="material-icons" style="color:#FF8F00;font-size:24px">assignment</span>
+      </div>
+      <div class="stat-value" data-count="3">3</div>
+      <div class="stat-label">Pending Assignments</div>
+      <div class="stat-change change-down"><span class="material-icons">warning</span>To grade by Friday</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#F3E5F5">
+        <span class="material-icons" style="color:#6A1B9A;font-size:24px">grade</span>
+      </div>
+      <div class="stat-value" data-count="75.6" data-suffix="%">75.6%</div>
+      <div class="stat-label">Class Average (Maths)</div>
+      <div class="stat-change change-up"><span class="material-icons">trending_up</span>+3.2% vs last term</div>
+    </div>
+  </div>
+
+  <!-- Today's schedule + Quick actions -->
+  <div class="grid-2" style="gap:20px;margin-bottom:24px">
+
+    <!-- Today's Periods -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>Today's Schedule</h3>
+          <p style="font-size:12px;color:var(--text-light);margin-top:2px">Monday, 3rd June 2024</p>
+        </div>
+        <span class="badge badge-primary">8 Periods</span>
+      </div>
+      <div id="todaySchedule" style="padding:0"></div>
+    </div>
+
+    <!-- Right column -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <div class="card-header"><h3>Quick Actions</h3></div>
+        <div class="card-body">
+          <div class="grid-2" style="gap:10px">
+            <a href="../admin/attendance.html" class="qa-item">
+              <div class="qa-icon" style="background:#E3F2FD">
+                <span class="material-icons" style="color:#0D47A1">how_to_reg</span>
+              </div>
+              <div class="qa-label">Mark Attendance</div>
+            </a>
+            <a href="../admin/results.html" class="qa-item">
+              <div class="qa-icon" style="background:#E8F5E9">
+                <span class="material-icons" style="color:#2E7D32">grade</span>
+              </div>
+              <div class="qa-label">Enter Results</div>
+            </a>
+            <a href="../admin/assignments.html" class="qa-item">
+              <div class="qa-icon" style="background:#FFF8E1">
+                <span class="material-icons" style="color:#FF8F00">assignment</span>
+              </div>
+              <div class="qa-label">Set Assignment</div>
+            </a>
+            <a href="../admin/communication.html" class="qa-item">
+              <div class="qa-icon" style="background:#F3E5F5">
+                <span class="material-icons" style="color:#6A1B9A">forum</span>
+              </div>
+              <div class="qa-label">Message Parents</div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Tasks -->
+      <div class="card">
+        <div class="card-header">
+          <h3>My Pending Tasks</h3>
+          <span class="badge badge-warning">5 tasks</span>
+        </div>
+        <div id="myTasks"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Class Performance + Attendance Charts -->
+  <div class="grid-2" style="gap:20px;margin-bottom:24px">
+    <div class="card">
+      <div class="card-header">
+        <h3>SS 2A — Maths Score Distribution</h3>
+        <span class="badge badge-primary">2nd Term 2024</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap-lg"><canvas id="classPerf"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h3>SS 2A — Weekly Attendance</h3>
+        <span class="badge badge-success">June 2024</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap-lg"><canvas id="classAtt"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Classes Table -->
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-header">
+      <h3>My Class — SS 2A Students</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="form-input" style="width:200px;height:34px;font-size:12.5px"
+          placeholder="Search student…" oninput="filterMyClass(this.value)">
+        <a href="../admin/results.html" class="btn btn-primary btn-sm">
+          <span class="material-icons">grade</span>Enter Results
+        </a>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Attendance</th>
+            <th>Maths Average</th>
+            <th>Grade</th>
+            <th>Last Test</th>
+            <th>Fee Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="myClassBody"></tbody>
+      </table>
+    </div>
+    <div class="card-footer" style="text-align:center">
+      <a href="../admin/students.html" style="font-size:13px;color:var(--primary);font-weight:600">
+        View Full Class Records →
+      </a>
+    </div>
+  </div>
+
+  <!-- Assignments Panel -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Assignments & Homework</h3>
+      <button class="btn btn-primary btn-sm" onclick="openModal('setAssignModal')">
+        <span class="material-icons">add</span>Set Assignment
+      </button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Title</th><th>Class</th><th>Subject</th>
+            <th>Deadline</th><th>Submitted</th><th>Graded</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="assignBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<!-- Mark Attendance Modal -->
+<div class="modal-overlay" id="markAttModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Quick Attendance — SS 2A</h2>
+      <button class="icon-btn modal-close" onclick="closeModal('markAttModal')">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Monday, 3rd June 2024 · 1st Period (8:00 AM)</p>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn btn-sm" style="background:var(--success-light);color:var(--success)"
+        onclick="markAllAtt('P')">
+        <span class="material-icons" style="font-size:14px">done_all</span>All Present
+      </button>
+      <button class="btn btn-sm" style="background:var(--danger-light);color:var(--danger)"
+        onclick="markAllAtt('A')">
+        <span class="material-icons" style="font-size:14px">remove_done</span>All Absent
+      </button>
+    </div>
+    <div id="quickAttList" style="max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:10px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('markAttModal')">Cancel</button>
+      <button class="btn btn-primary"
+        onclick="closeModal('markAttModal');showToast('Attendance saved for SS 2A — 37 present, 3 absent','success')">
+        <span class="material-icons">save</span>Save Attendance
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Set Assignment Modal -->
+<div class="modal-overlay" id="setAssignModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Set Assignment</h2>
+      <button class="icon-btn modal-close" onclick="closeModal('setAssignModal')">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Assignment Title *</label>
+      <input class="form-input" placeholder="e.g. Algebra Practice — Chapter 7">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Class *</label>
+        <select class="form-select form-input">
+          <option>SS 2A</option><option>SS 2B</option><option>SS 1A</option><option>JSS 3B</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subject *</label>
+        <select class="form-select form-input">
+          <option>Mathematics</option><option>Further Maths</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Deadline *</label>
+        <input class="form-input" type="datetime-local">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Max Score</label>
+        <input class="form-input" type="number" value="20">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Instructions / Description</label>
+      <textarea class="form-input form-textarea"
+        placeholder="Describe the assignment, questions to answer, resources to use…"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Attach File (Optional)</label>
+      <div style="border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer"
+        onclick="showToast('File upload selected','info')">
+        <span class="material-icons" style="font-size:32px;color:var(--text-light);display:block;margin-bottom:8px">upload_file</span>
+        <span style="font-size:13px;color:var(--text-light)">Click to upload PDF, Word, or image</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('setAssignModal')">Cancel</button>
+      <button class="btn btn-primary"
+        onclick="closeModal('setAssignModal');showToast('Assignment posted — students notified','success')">
+        <span class="material-icons">send</span>Post Assignment
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Timetable Modal -->
+<div class="modal-overlay" id="timetableModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2>My Weekly Timetable</h2>
+      <button class="icon-btn modal-close" onclick="closeModal('timetableModal')">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div id="myTTGrid" style="overflow-x:auto"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('timetableModal')">Close</button>
+      <button class="btn btn-primary" onclick="showToast('Timetable downloaded','success')">
+        <span class="material-icons">download</span>Download PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../../js/layout.js"></script>
+<script src="../../js/app.js"></script>
+<script src="../../js/charts.js"></script>
+<script>
+initLayout({ role:'teacher', activePage:'dashboard', pageTitle:'Teacher Dashboard' });
+initAnimations();
+
+// ---- Today's Schedule ----
+const periods = [
+  { time:'8:00–8:40',   subject:'Mathematics', cls:'SS 2A',  room:'Classroom 2A',  current:true  },
+  { time:'8:40–9:20',   subject:'Mathematics', cls:'SS 2B',  room:'Classroom 2B',  current:false },
+  { time:'9:20–10:00',  subject:'Free Period',  cls:'—',      room:'Staff Room',    current:false },
+  { time:'10:20–11:00', subject:'Mathematics', cls:'SS 1A',  room:'Classroom 1A',  current:false },
+  { time:'11:00–11:40', subject:'Mathematics', cls:'JSS 3B', room:'Classroom 3B',  current:false },
+  { time:'11:40–12:20', subject:'Further Maths',cls:'SS 2A', room:'Classroom 2A',  current:false },
+  { time:'13:20–14:00', subject:'Mathematics', cls:'JSS 1A', room:'Classroom 1B',  current:false },
+  { time:'14:00–14:40', subject:'Free Period',  cls:'—',      room:'Staff Room',    current:false },
+];
+
+const ts = document.getElementById('todaySchedule');
+periods.forEach(p => {
+  ts.innerHTML += `
+    <div style="display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border-soft);
+      background:${p.current ? 'var(--primary-soft)' : 'transparent'}">
+      <div style="width:80px;font-size:10.5px;font-weight:700;font-family:'Lexend',sans-serif;
+        color:${p.current ? 'var(--primary)' : 'var(--text-light)'};flex-shrink:0">${p.time}</div>
+      <div style="width:3px;height:36px;border-radius:2px;
+        background:${p.current ? 'var(--primary)' : 'var(--border)'};flex-shrink:0"></div>
+      <div style="flex:1">
+        <div style="font-size:13.5px;font-weight:${p.current ? '700' : '500'};
+          color:${p.current ? 'var(--primary)' : 'var(--text-dark)'}">${p.subject}</div>
+        <div style="font-size:11.5px;color:var(--text-light);margin-top:2px">${p.cls} · ${p.room}</div>
+      </div>
+      ${p.current ? '<span class="badge badge-primary">NOW</span>' : ''}
+    </div>`;
+});
+
+// ---- Pending Tasks ----
+const tasks = [
+  { task:'Grade JSS 3B Mathematics assignments (set 2)', due:'Today',       urgent:true  },
+  { task:'Upload SS 2A 2nd term exam scores to portal',  due:'Tomorrow',    urgent:true  },
+  { task:'Prepare SS 1A lesson notes — Chapter 7',       due:'Wed, 5 Jun',  urgent:false },
+  { task:'Submit monthly performance report to HOD',     due:'Fri, 7 Jun',  urgent:false },
+  { task:'Review and set CBT questions for June exams',  due:'Mon, 10 Jun', urgent:false },
+];
+
+const mt = document.getElementById('myTasks');
+tasks.forEach(t => {
+  mt.innerHTML += `
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 18px;border-bottom:1px solid var(--border-soft)">
+      <input type="checkbox" style="margin-top:3px;width:15px;height:15px;accent-color:var(--primary);flex-shrink:0">
+      <div style="flex:1">
+        <div style="font-size:13px;color:var(--text-dark);line-height:1.5">${t.task}</div>
+        <div style="font-size:11px;color:${t.urgent ? 'var(--danger)' : 'var(--text-light)'};margin-top:2px">
+          <span class="material-icons" style="font-size:12px;vertical-align:middle">schedule</span>
+          Due: ${t.due}
+        </div>
+      </div>
+      ${t.urgent ? '<span class="badge badge-danger" style="flex-shrink:0">Urgent</span>' : ''}
+    </div>`;
+});
+
+// ---- Score Distribution Chart ----
+new Chart(document.getElementById('classPerf'), {
+  type: 'bar',
+  data: {
+    labels: ['< 40','40–49','50–59','60–69','70–79','80–89','90–100'],
+    datasets: [{
+      label: 'Students',
+      data: [3, 8, 10, 9, 7, 2, 1],
+      backgroundColor: ['#C62828','#E65100','#FF8F00','#1565C0','#2E7D32','#00695C','#6A1B9A'],
+      borderRadius: 8
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#78909C' } },
+      y: { grid: { color: '#F0F4FF' }, ticks: { font: { size: 11 }, color: '#78909C', stepSize: 2 } }
+    }
+  }
+});
+
+// ---- Weekly Attendance Chart ----
+new Chart(document.getElementById('classAtt'), {
+  type: 'line',
+  data: {
+    labels: ['Wk 1 (May 6)','Wk 2 (May 13)','Wk 3 (May 20)','Wk 4 (May 27)','Wk 5 (Jun 3)'],
+    datasets: [{
+      label: 'SS 2A Attendance %',
+      data: [95, 91, 93, 88, 92],
+      borderColor: '#2E7D32',
+      backgroundColor: 'rgba(46,125,50,0.08)',
+      tension: 0.4, borderWidth: 2.5,
+      fill: true, pointBackgroundColor: '#2E7D32', pointRadius: 5
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#78909C' } },
+      y: {
+        min: 75, max: 100, grid: { color: '#F0F4FF' },
+        ticks: { font: { size: 11 }, color: '#78909C', callback: v => v + '%' }
+      }
+    }
+  }
+});
+
+// ---- My Class Table ----
+const classData = [
+  { name:'Adaeze Obi',        att:94, score:84, test:18, fee:'paid'    },
+  { name:'Emeka Chukwu',      att:81, score:58, test:13, fee:'partial' },
+  { name:'Fatima Aliyu',      att:97, score:90, test:20, fee:'paid'    },
+  { name:'Chidi Nwosu',       att:72, score:42, test:9,  fee:'unpaid'  },
+  { name:'Blessing Eze',      att:99, score:93, test:19, fee:'paid'    },
+  { name:'Muhammed Garba',    att:85, score:65, test:14, fee:'partial' },
+  { name:'Ngozi Okafor',      att:91, score:72, test:16, fee:'paid'    },
+  { name:'Tunde Adeleke',     att:88, score:69, test:15, fee:'paid'    },
+];
+
+function renderClassTable(list) {
+  const mcb = document.getElementById('myClassBody');
+  mcb.innerHTML = '';
+  list.forEach(s => {
+    const g   = getGrade(s.score);
+    const ac  = s.att >= 90 ? 'var(--success)' : s.att >= 75 ? 'var(--warning)' : 'var(--danger)';
+    const sc  = s.score >= 70 ? 'var(--success)' : s.score >= 50 ? 'var(--warning)' : 'var(--danger)';
+    const fc  = { paid:'badge-success', partial:'badge-warning', unpaid:'badge-danger' }[s.fee];
+    const fl  = { paid:'Paid', partial:'Partial', unpaid:'Unpaid' }[s.fee];
+    mcb.innerHTML += `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="tbl-avatar" style="background:${avaColor(s.name)}">${getInitials(s.name)}</div>
+            <span class="tbl-name">${s.name}</span>
+          </div>
+        </td>
+        <td>
+          <div style="display:flex;align-items:center;gap:7px">
+            <div class="progress-bar" style="width:56px">
+              <div class="progress-fill" style="width:${s.att}%;background:${ac}"></div>
+            </div>
+            <span style="font-size:12px;font-weight:700;color:${ac}">${s.att}%</span>
+          </div>
+        </td>
+        <td>
+          <div style="display:flex;align-items:center;gap:7px">
+            <div class="progress-bar" style="width:56px">
+              <div class="progress-fill" style="width:${s.score}%;background:${sc}"></div>
+            </div>
+            <span style="font-size:12px;font-weight:700;color:${sc}">${s.score}%</span>
+          </div>
+        </td>
+        <td><span class="badge ${g.cls}">${g.grade} — ${g.label}</span></td>
+        <td style="font-weight:700;color:${s.test>=15?'var(--success)':'var(--warning)'}">${s.test}/20</td>
+        <td><span class="badge ${fc}">${fl}</span></td>
+        <td>
+          <div class="tbl-actions">
+            <button class="icon-btn" title="View full profile"><span class="material-icons">visibility</span></button>
+            <button class="icon-btn" title="Message parent" onclick="showToast('Message sent to parent','success')"><span class="material-icons">sms</span></button>
+            <button class="icon-btn" title="Enter result"><span class="material-icons">edit</span></button>
+          </div>
+        </td>
+      </tr>`;
+  });
+}
+renderClassTable(classData);
+
+function filterMyClass(q) {
+  renderClassTable(classData.filter(s =>
+    s.name.toLowerCase().includes(q.toLowerCase())
+  ));
+}
+
+// ---- Assignments ----
+const assigns = [
+  { title:'Algebra Practice — Chapter 7',    cls:'SS 2A',   subj:'Mathematics', deadline:'5 Jun',  submitted:38, graded:38, status:'graded'  },
+  { title:'Quadratic Equations Worksheet',   cls:'SS 2B',   subj:'Mathematics', deadline:'7 Jun',  submitted:32, graded:18, status:'partial'  },
+  { title:'Trigonometry Intro — Take-Home',  cls:'SS 1A',   subj:'Mathematics', deadline:'10 Jun', submitted:14, graded:0,  status:'open'     },
+  { title:'Statistics Data Collection Task', cls:'JSS 3B',  subj:'Mathematics', deadline:'3 Jun',  submitted:40, graded:0,  status:'due-today'},
+];
+const ab = document.getElementById('assignBody');
+assigns.forEach(a => {
+  const sc = { graded:'badge-success', partial:'badge-warning', open:'badge-primary', 'due-today':'badge-danger' }[a.status];
+  const sl = { graded:'Graded', partial:'Partially Graded', open:'Open', 'due-today':'Due Today' }[a.status];
+  ab.innerHTML += `
+    <tr>
+      <td style="font-size:13.5px;font-weight:600">${a.title}</td>
+      <td><span class="badge badge-primary">${a.cls}</span></td>
+      <td style="font-size:13px">${a.subj}</td>
+      <td style="font-size:13px;color:${a.status==='due-today'?'var(--danger)':'var(--text-medium)'};font-weight:${a.status==='due-today'?'700':'400'}">${a.deadline}</td>
+      <td style="font-weight:600">${a.submitted}/${a.submitted <= 40 ? 40 : a.submitted}</td>
+      <td style="font-weight:600;color:${a.graded===a.submitted?'var(--success)':'var(--warning)'}">${a.graded}</td>
+      <td><span class="badge ${sc}">${sl}</span></td>
+      <td>
+        <div class="tbl-actions">
+          <button class="icon-btn" title="View submissions"><span class="material-icons">folder_open</span></button>
+          <button class="icon-btn" title="Grade" onclick="showToast('Grading interface opened','info')"><span class="material-icons">grading</span></button>
+          <button class="icon-btn" title="Edit"><span class="material-icons">edit</span></button>
+        </div>
+      </td>
+    </tr>`;
+});
+
+// ---- Quick Attendance List ----
+const qal = document.getElementById('quickAttList');
+classData.forEach((s, i) => {
+  qal.innerHTML += `
+    <div style="display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid var(--border-soft)">
+      <div style="width:28px;height:28px;border-radius:8px;background:${avaColor(s.name)};
+        display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:700;flex-shrink:0">
+        ${i + 1}
+      </div>
+      <span style="flex:1;font-size:13.5px;font-weight:500">${s.name}</span>
+      <div style="display:flex;gap:5px" id="attBtns_${i}">
+        <button onclick="setQuickAtt(${i},'P')" id="attP_${i}"
+          class="btn btn-sm" style="background:var(--success-light);color:var(--success);padding:4px 10px;font-size:12px">P</button>
+        <button onclick="setQuickAtt(${i},'L')" id="attL_${i}"
+          class="btn btn-sm" style="background:#ECEFF1;color:var(--text-light);padding:4px 10px;font-size:12px">L</button>
+        <button onclick="setQuickAtt(${i},'A')" id="attA_${i}"
+          class="btn btn-sm" style="background:#ECEFF1;color:var(--text-light);padding:4px 10px;font-size:12px">A</button>
+      </div>
+    </div>`;
+});
+
+function setQuickAtt(i, val) {
+  const cols = {
+    P: { bg: 'var(--success-light)', color: 'var(--success)' },
+    L: { bg: 'var(--warning-light)', color: 'var(--warning)' },
+    A: { bg: 'var(--danger-light)',  color: 'var(--danger)'  },
+  };
+  ['P','L','A'].forEach(k => {
+    const btn = document.getElementById(`att${k}_${i}`);
+    if (k === val) { btn.style.background = cols[k].bg; btn.style.color = cols[k].color; }
+    else { btn.style.background = '#ECEFF1'; btn.style.color = 'var(--text-light)'; }
+  });
+}
+
+function markAllAtt(val) {
+  classData.forEach((_, i) => setQuickAtt(i, val));
+}
+
+// ---- My Weekly Timetable (Modal) ----
+const TT_DAYS  = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+const TT_TIMES = ['8:00','8:40','9:20','Break','10:20','11:00','11:40','Lunch','13:20','14:00'];
+const myTT = [
+  ['SS 2A','SS 2B','—',null,'SS 1A','SS 1A','SS 2A',null,'JSS 1A','—'],
+  ['SS 2B','—','SS 2A',null,'JSS 3B','—','SS 2B',null,'—','SS 2A'],
+  ['SS 1A','JSS 3B','—',null,'SS 2A','SS 2B','—',null,'SS 1A','JSS 3B'],
+  ['—','SS 2A','JSS 1A',null,'—','SS 2A','SS 2B',null,'JSS 3B','—'],
+  ['JSS 3B','SS 1A','—',null,'SS 2B','JSS 1A','—',null,'SS 2A','—'],
+];
+
+const tgEl = document.getElementById('myTTGrid');
+let ttHtml = `<div style="display:grid;grid-template-columns:72px repeat(5,1fr);gap:4px;min-width:600px">`;
+ttHtml += `<div></div>`;
+TT_DAYS.forEach(d => ttHtml += `<div style="background:linear-gradient(135deg,#0D47A1,#1976D2);color:white;
+  font-family:'Lexend',sans-serif;font-weight:700;font-size:11px;padding:8px;border-radius:8px;text-align:center">${d}</div>`);
+
+TT_TIMES.forEach((t, pi) => {
+  const isBreak = t === 'Break' || t === 'Lunch';
+  ttHtml += `<div style="display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:700;color:var(--text-light);background:var(--bg-subtle);
+    border-radius:7px;padding:4px;text-align:center">${t}</div>`;
+  TT_DAYS.forEach((_, di) => {
+    if (isBreak) {
+      ttHtml += `<div style="background:#ECEFF1;border-radius:7px;padding:6px;text-align:center;
+        font-size:10px;color:#90A4AE;font-style:italic;display:flex;align-items:center;justify-content:center">${t}</div>`;
+    } else {
+      const val = myTT[di][pi];
+      const hasClass = val && val !== '—';
+      ttHtml += `<div style="background:${hasClass ? 'var(--primary-soft)' : 'var(--bg)'};
+        border-radius:7px;padding:7px 6px;text-align:center;border-left:${hasClass ? '3px solid var(--primary)' : 'none'};
+        font-size:11px;font-weight:${hasClass ? '700' : '400'};
+        color:${hasClass ? 'var(--primary)' : 'var(--text-muted)'}">${val || '—'}</div>`;
+    }
+  });
+});
+ttHtml += `</div>`;
+tgEl.innerHTML = ttHtml;
+</script>
+</body>
+</html>

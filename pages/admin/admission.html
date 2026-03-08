@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Admission — EduNigeria SMS</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="sb-overlay" class="sb-overlay"></div>
+<aside id="sidebar" class="sidebar"></aside>
+<div class="main-wrap">
+<header id="navbar" class="navbar"></header>
+<main class="page-content">
+
+  <div class="pg-header">
+    <div class="breadcrumb">
+      <a href="dashboard.html">Home</a>
+      <span class="material-icons">chevron_right</span><span>Admission</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1>Admission Management</h1>
+        <p>Manage new student applications, screening, enrolment and class assignment</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-outline btn-sm">
+          <span class="material-icons">download</span>Export
+        </button>
+        <button class="btn btn-primary" onclick="openModal('newAdmissionModal')">
+          <span class="material-icons">person_add</span>New Admission
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#E3F2FD">
+        <span class="material-icons" style="color:#0D47A1;font-size:24px">how_to_reg</span>
+      </div>
+      <div class="stat-value" data-count="62">62</div>
+      <div class="stat-label">Applications This Term</div>
+      <div class="stat-change change-up"><span class="material-icons">trending_up</span>+18 vs last term</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#FFF8E1">
+        <span class="material-icons" style="color:#FF8F00;font-size:24px">pending</span>
+      </div>
+      <div class="stat-value" data-count="14">14</div>
+      <div class="stat-label">Pending Review</div>
+      <div class="stat-change change-down"><span class="material-icons">schedule</span>Awaiting screening</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#E8F5E9">
+        <span class="material-icons" style="color:#2E7D32;font-size:24px">check_circle</span>
+      </div>
+      <div class="stat-value" data-count="41">41</div>
+      <div class="stat-label">Admitted & Enrolled</div>
+      <div class="stat-change change-up"><span class="material-icons">trending_up</span>66% acceptance rate</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#FFEBEE">
+        <span class="material-icons" style="color:#C62828;font-size:24px">cancel</span>
+      </div>
+      <div class="stat-value" data-count="7">7</div>
+      <div class="stat-label">Declined / Withdrawn</div>
+      <div class="stat-change change-down"><span class="material-icons">trending_down</span>11% decline rate</div>
+    </div>
+  </div>
+
+  <!-- Pipeline -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header">
+      <h3>Admission Pipeline</h3>
+      <span style="font-size:12px;color:var(--text-light)">2024/2025 Academic Year</span>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative">
+        <!-- Pipeline arrow line -->
+        <div style="position:absolute;top:28px;left:10%;right:10%;height:3px;
+          background:linear-gradient(90deg,var(--primary),var(--success));border-radius:2px;z-index:0"></div>
+        <!-- Steps -->
+        <div id="pipelineSteps"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:4px;background:var(--border);border-radius:12px;padding:4px;width:fit-content;margin-bottom:18px">
+    <button class="btn btn-primary btn-sm" id="adtab-all"       onclick="switchAdTab('all')">All Applications</button>
+    <button class="btn btn-ghost btn-sm"   id="adtab-pending"   onclick="switchAdTab('pending')">Pending (14)</button>
+    <button class="btn btn-ghost btn-sm"   id="adtab-admitted"  onclick="switchAdTab('admitted')">Admitted (41)</button>
+    <button class="btn btn-ghost btn-sm"   id="adtab-declined"  onclick="switchAdTab('declined')">Declined (7)</button>
+  </div>
+
+  <!-- Filters bar -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-body" style="padding:12px 18px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <div style="position:relative;flex:1;min-width:180px">
+        <span class="material-icons" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:17px;color:var(--text-light)">search</span>
+        <input class="form-input" style="padding-left:38px" placeholder="Search by name, application no…" oninput="renderAdmissions(this.value)">
+      </div>
+      <select class="form-select" style="width:auto;height:36px">
+        <option>All Classes</option>
+        <option>JSS 1 (Fresh)</option><option>JSS 2 (Transfer)</option>
+        <option>SS 1 (Fresh)</option><option>SS 2 (Transfer)</option>
+      </select>
+      <select class="form-select" style="width:auto;height:36px">
+        <option>All Genders</option><option>Male</option><option>Female</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Applications Table -->
+  <div class="card">
+    <div class="card-header">
+      <h3 id="adTableTitle">All Applications</h3>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline btn-sm" onclick="showToast('Bulk acceptance letters sent','success')">
+          <span class="material-icons">email</span>Send Letters
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="openModal('newAdmissionModal')">
+          <span class="material-icons">add</span>New
+        </button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>App No.</th>
+            <th>Applicant</th>
+            <th>Class Applied</th>
+            <th>Parent / Guardian</th>
+            <th>Phone</th>
+            <th>Applied On</th>
+            <th>Screening</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="admissionBody"></tbody>
+      </table>
+    </div>
+    <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:13px;color:var(--text-light)">Showing 1–10 of 62 applications</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm"><span class="material-icons">chevron_left</span></button>
+        <button class="btn btn-primary btn-sm">1</button>
+        <button class="btn btn-outline btn-sm">2</button>
+        <button class="btn btn-outline btn-sm">3</button>
+        <button class="btn btn-outline btn-sm"><span class="material-icons">chevron_right</span></button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<!-- New Admission Modal (Multi-step) -->
+<div class="modal-overlay" id="newAdmissionModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2>New Student Admission</h2>
+      <button class="icon-btn modal-close" onclick="closeModal('newAdmissionModal')">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- Step indicators -->
+    <div style="display:flex;gap:0;margin-bottom:22px">
+      <div class="step-item active" id="stepDot1" onclick="gotoStep(1)">
+        <div class="step-circle">1</div><div class="step-label">Student Info</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item" id="stepDot2" onclick="gotoStep(2)">
+        <div class="step-circle">2</div><div class="step-label">Parent Info</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item" id="stepDot3" onclick="gotoStep(3)">
+        <div class="step-circle">3</div><div class="step-label">Documents</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item" id="stepDot4" onclick="gotoStep(4)">
+        <div class="step-circle">4</div><div class="step-label">Confirm</div>
+      </div>
+    </div>
+
+    <!-- Step 1: Student Info -->
+    <div id="step1">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">First Name *</label><input class="form-input" placeholder="First name"></div>
+        <div class="form-group"><label class="form-label">Last Name *</label><input class="form-input" placeholder="Last name"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Date of Birth *</label><input class="form-input" type="date"></div>
+        <div class="form-group"><label class="form-label">Gender *</label>
+          <select class="form-select form-input"><option>Male</option><option>Female</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Class Applying For *</label>
+          <select class="form-select form-input">
+            <option>JSS 1 (New Student)</option><option>JSS 2 (Transfer)</option><option>JSS 3 (Transfer)</option>
+            <option>SS 1 (New Student)</option><option>SS 2 (Transfer)</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Religion</label>
+          <select class="form-select form-input"><option>Christianity</option><option>Islam</option><option>Other</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Previous School</label>
+        <input class="form-input" placeholder="Name of last attended school (if any)">
+      </div>
+      <div class="form-group"><label class="form-label">Medical Conditions / Allergies</label>
+        <textarea class="form-input form-textarea" rows="2" placeholder="None / describe…"></textarea>
+      </div>
+    </div>
+
+    <!-- Step 2: Parent Info (hidden) -->
+    <div id="step2" style="display:none">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Parent / Guardian Name *</label><input class="form-input" placeholder="Full name"></div>
+        <div class="form-group"><label class="form-label">Relationship</label>
+          <select class="form-select form-input"><option>Father</option><option>Mother</option><option>Guardian</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Phone Number *</label><input class="form-input" type="tel" placeholder="08XXXXXXXXX"></div>
+        <div class="form-group"><label class="form-label">Email Address</label><input class="form-input" type="email" placeholder="parent@email.com"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Home Address *</label>
+        <textarea class="form-input form-textarea" rows="2" placeholder="Full residential address"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Occupation</label><input class="form-input" placeholder="e.g. Civil Servant"></div>
+        <div class="form-group"><label class="form-label">Alternative Phone</label><input class="form-input" placeholder="Optional"></div>
+      </div>
+    </div>
+
+    <!-- Step 3: Documents (hidden) -->
+    <div id="step3" style="display:none">
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:18px">
+        Upload required admission documents. Accepted formats: PDF, JPG, PNG (max 5MB each).
+      </p>
+      <div style="display:grid;gap:12px">
+        <div id="doc-birth"   class="doc-upload-row">Birth Certificate</div>
+        <div id="doc-report"  class="doc-upload-row">Last School Report Card</div>
+        <div id="doc-passport"class="doc-upload-row">Passport Photograph (2 copies)</div>
+        <div id="doc-medical" class="doc-upload-row">Medical / Immunisation Record</div>
+        <div id="doc-lc"      class="doc-upload-row">Local Government Identification</div>
+      </div>
+    </div>
+
+    <!-- Step 4: Confirm (hidden) -->
+    <div id="step4" style="display:none">
+      <div style="background:var(--success-light);border:1px solid #A5D6A7;border-radius:12px;padding:18px 20px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-start">
+        <span class="material-icons" style="color:var(--success);font-size:22px;flex-shrink:0">check_circle</span>
+        <div>
+          <div style="font-weight:700;font-size:14px;color:var(--text-dark);margin-bottom:4px">Ready to Submit</div>
+          <div style="font-size:13px;color:var(--text-medium)">All required information has been filled. Click "Submit Admission" to register the student and generate an Application Number.</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px">
+        <div style="padding:16px;background:var(--bg);border-radius:12px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-light);margin-bottom:12px">Student Details</div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-light)">Name</span><strong>—</strong></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-light)">Class</span><strong>JSS 1</strong></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-light)">Gender</span><strong>—</strong></div>
+          </div>
+        </div>
+        <div style="padding:16px;background:var(--bg);border-radius:12px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-light);margin-bottom:12px">Parent Details</div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-light)">Parent</span><strong>—</strong></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-light)">Phone</span><strong>—</strong></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-light)">Docs</span><strong>5 uploaded</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn btn-outline" id="stepPrevBtn" onclick="gotoStep(currentStep-1)" disabled>
+        <span class="material-icons">chevron_left</span>Previous
+      </button>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-outline" onclick="closeModal('newAdmissionModal')">Cancel</button>
+        <button class="btn btn-primary" id="stepNextBtn" onclick="handleStepNext()">
+          Next<span class="material-icons">chevron_right</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Application Modal -->
+<div class="modal-overlay" id="viewAppModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Application Details</h2>
+      <button class="icon-btn modal-close" onclick="closeModal('viewAppModal')">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div id="appDetailBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" style="margin-right:auto"
+        onclick="closeModal('viewAppModal');showToast('Application declined','danger')">
+        <span class="material-icons">cancel</span>Decline
+      </button>
+      <button class="btn btn-outline" onclick="closeModal('viewAppModal')">Close</button>
+      <button class="btn btn-success" style="background:var(--success);color:white"
+        onclick="closeModal('viewAppModal');showToast('Student admitted and enrolment letter sent','success')">
+        <span class="material-icons">check_circle</span>Admit Student
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../../js/layout.js"></script>
+<script src="../../js/app.js"></script>
+<script>
+initLayout({ role:'admin', activePage:'admission', pageTitle:'Admission' });
+initAnimations();
+
+// ---- Pipeline ----
+const pipeline = [
+  { label:'Application\nReceived',  count:62, color:'#0D47A1', bg:'#E3F2FD' },
+  { label:'Documents\nVerified',    count:52, color:'#6A1B9A', bg:'#F3E5F5' },
+  { label:'Screening\n/ Interview', count:44, color:'#FF8F00', bg:'#FFF8E1' },
+  { label:'Offer\nIssued',          count:41, color:'#2E7D32', bg:'#E8F5E9' },
+  { label:'Enrolled\n& Active',     count:38, color:'#2E7D32', bg:'#E8F5E9' },
+];
+const ps = document.getElementById('pipelineSteps');
+ps.style.cssText = 'display:contents';
+ps.parentElement.style.display = 'grid';
+ps.parentElement.style.gridTemplateColumns = 'repeat(5,1fr)';
+
+pipeline.forEach((p, i) => {
+  ps.innerHTML += `
+    <div style="display:flex;flex-direction:column;align-items:center;position:relative;z-index:1">
+      <div style="width:56px;height:56px;border-radius:50%;background:${p.bg};border:3px solid ${p.color};
+        display:flex;align-items:center;justify-content:center;margin-bottom:10px;
+        font-size:18px;font-weight:800;font-family:'Lexend',sans-serif;color:${p.color}">
+        ${p.count}
+      </div>
+      <div style="font-size:11px;text-align:center;color:var(--text-medium);font-weight:600;line-height:1.4;white-space:pre-line">${p.label}</div>
+    </div>`;
+});
+
+// ---- Admissions Data ----
+const admissions = [
+  { no:'APP-001', name:'Emeka Okafor Jr.',   cls:'JSS 1',  parent:'Mr E. Okafor',    phone:'0803-XXX-1234', date:'28 May', screen:'Passed', status:'admitted'  },
+  { no:'APP-002', name:'Khadijat Abubakar',  cls:'SS 1',   parent:'Alhaja M. Abubakar',phone:'0806-XXX-5678',date:'29 May', screen:'Passed', status:'admitted'  },
+  { no:'APP-003', name:'Chukwuemeka Eze',    cls:'JSS 1',  parent:'Dr C. Eze',        phone:'0812-XXX-9012', date:'30 May', screen:'Scheduled',status:'pending' },
+  { no:'APP-004', name:'Amara Nwachukwu',    cls:'SS 2',   parent:'Mrs B. Nwachukwu', phone:'0705-XXX-3456', date:'1 Jun',  screen:'Pending',  status:'pending'  },
+  { no:'APP-005', name:'Usman Bello',         cls:'JSS 1',  parent:'Alhaji U. Bello',  phone:'0810-XXX-7890', date:'1 Jun',  screen:'Pending',  status:'pending'  },
+  { no:'APP-006', name:'Nneka Okonkwo',       cls:'SS 1',   parent:'Mr P. Okonkwo',    phone:'0803-XXX-2345', date:'2 Jun',  screen:'Failed',   status:'declined' },
+  { no:'APP-007', name:'David Adeyemi',       cls:'JSS 2',  parent:'Rev. K. Adeyemi',  phone:'0708-XXX-6789', date:'2 Jun',  screen:'Passed',   status:'admitted' },
+  { no:'APP-008', name:'Fatima Sule',         cls:'JSS 1',  parent:'Hajiya F. Sule',   phone:'0811-XXX-0123', date:'3 Jun',  screen:'Pending',  status:'pending'  },
+];
+
+function renderAdmissions(q='') {
+  const tbody = document.getElementById('admissionBody');
+  tbody.innerHTML = '';
+  admissions
+    .filter(a => !q || a.name.toLowerCase().includes(q.toLowerCase()) || a.no.toLowerCase().includes(q))
+    .forEach(a => {
+      const sc  = { admitted:'badge-success', pending:'badge-warning', declined:'badge-danger' }[a.status];
+      const scc = { Passed:'badge-success', Failed:'badge-danger', Pending:'badge-neutral', Scheduled:'badge-primary' }[a.screen] || 'badge-neutral';
+      tbody.innerHTML += `
+        <tr>
+          <td style="font-size:11.5px;color:var(--text-light);font-family:'Lexend',sans-serif">${a.no}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:9px">
+              <div class="tbl-avatar" style="background:${avaColor(a.name)}">${getInitials(a.name)}</div>
+              <span class="tbl-name">${a.name}</span>
+            </div>
+          </td>
+          <td><span class="badge badge-primary">${a.cls}</span></td>
+          <td style="font-size:13px">${a.parent}</td>
+          <td style="font-size:12.5px">${a.phone}</td>
+          <td style="font-size:12px;color:var(--text-light)">${a.date}</td>
+          <td><span class="badge ${scc}">${a.screen}</span></td>
+          <td><span class="badge ${sc}">${a.status.charAt(0).toUpperCase()+a.status.slice(1)}</span></td>
+          <td>
+            <div class="tbl-actions">
+              <button class="icon-btn" title="View application"
+                onclick="viewApp('${a.no}','${a.name}','${a.cls}','${a.parent}','${a.status}')">
+                <span class="material-icons">visibility</span>
+              </button>
+              ${a.status==='pending' ? `
+                <button class="icon-btn" style="color:var(--success)" title="Admit"
+                  onclick="showToast('${a.name} has been admitted','success')">
+                  <span class="material-icons">check_circle</span>
+                </button>
+                <button class="icon-btn" style="color:var(--danger)" title="Decline"
+                  onclick="showToast('Application declined','danger')">
+                  <span class="material-icons">cancel</span>
+                </button>` : ''}
+              <button class="icon-btn" title="Email letter"
+                onclick="showToast('Admission letter sent','success')">
+                <span class="material-icons">email</span>
+              </button>
+            </div>
+          </td>
+        </tr>`;
+    });
+}
+renderAdmissions();
+
+function viewApp(no, name, cls, parent, status) {
+  const sc = { admitted:'var(--success)', pending:'var(--warning)', declined:'var(--danger)' }[status];
+  document.getElementById('appDetailBody').innerHTML = `
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+      <div style="width:56px;height:56px;border-radius:50%;background:${avaColor(name)};
+        display:flex;align-items:center;justify-content:center;color:white;font-size:20px;font-weight:700">
+        ${getInitials(name)}
+      </div>
+      <div>
+        <div style="font-size:17px;font-weight:800;font-family:'Lexend',sans-serif">${name}</div>
+        <div style="font-size:13px;color:var(--text-light)">${no} · Applying for ${cls}</div>
+      </div>
+      <span class="badge" style="margin-left:auto;background:${sc}20;color:${sc};border:1px solid ${sc}40;font-size:12px;padding:5px 14px">
+        ${status.charAt(0).toUpperCase()+status.slice(1)}
+      </span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;margin-bottom:18px">
+      <div style="padding:12px;background:var(--bg);border-radius:10px">
+        <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-light);margin-bottom:8px">Student</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text-light)">Name</span><strong>${name}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text-light)">Class</span><strong>${cls}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text-light)">Application</span><strong>${no}</strong></div>
+        </div>
+      </div>
+      <div style="padding:12px;background:var(--bg);border-radius:10px">
+        <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-light);margin-bottom:8px">Parent</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text-light)">Name</span><strong>${parent}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text-light)">Phone</span><strong>08XX-XXX-XXXX</strong></div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:12.5px;color:var(--text-light);text-align:center">
+      Click <b>Admit Student</b> below to complete enrolment and generate Admission Number.
+    </div>`;
+  openModal('viewAppModal');
+}
+
+// ---- Tab switching ----
+function switchAdTab(tab) {
+  ['all','pending','admitted','declined'].forEach(t => {
+    document.getElementById(`adtab-${t}`).className = t===tab ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
+  });
+  const titles = { all:'All Applications', pending:'Pending Review', admitted:'Admitted Students', declined:'Declined / Withdrawn' };
+  document.getElementById('adTableTitle').textContent = titles[tab];
+  const filterMap = { all:null, pending:'pending', admitted:'admitted', declined:'declined' };
+  const f = filterMap[tab];
+  const tbody = document.getElementById('admissionBody');
+  tbody.innerHTML = '';
+  (f ? admissions.filter(a => a.status === f) : admissions).forEach(a => {
+    const sc  = { admitted:'badge-success', pending:'badge-warning', declined:'badge-danger' }[a.status];
+    const scc = { Passed:'badge-success', Failed:'badge-danger', Pending:'badge-neutral', Scheduled:'badge-primary' }[a.screen] || 'badge-neutral';
+    tbody.innerHTML += `
+      <tr>
+        <td style="font-size:11.5px;color:var(--text-light);font-family:'Lexend',sans-serif">${a.no}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:9px">
+            <div class="tbl-avatar" style="background:${avaColor(a.name)}">${getInitials(a.name)}</div>
+            <span class="tbl-name">${a.name}</span>
+          </div>
+        </td>
+        <td><span class="badge badge-primary">${a.cls}</span></td>
+        <td style="font-size:13px">${a.parent}</td>
+        <td style="font-size:12.5px">${a.phone}</td>
+        <td style="font-size:12px;color:var(--text-light)">${a.date}</td>
+        <td><span class="badge ${scc}">${a.screen}</span></td>
+        <td><span class="badge ${sc}">${a.status.charAt(0).toUpperCase()+a.status.slice(1)}</span></td>
+        <td>
+          <div class="tbl-actions">
+            <button class="icon-btn" onclick="viewApp('${a.no}','${a.name}','${a.cls}','${a.parent}','${a.status}')">
+              <span class="material-icons">visibility</span>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+  });
+}
+
+// ---- Multi-step form ----
+let currentStep = 1;
+function gotoStep(step) {
+  if (step < 1 || step > 4) return;
+  document.getElementById(`step${currentStep}`).style.display = 'none';
+  document.getElementById(`stepDot${currentStep}`).classList.remove('active');
+  currentStep = step;
+  document.getElementById(`step${currentStep}`).style.display = 'block';
+  document.getElementById(`stepDot${currentStep}`).classList.add('active');
+  document.getElementById('stepPrevBtn').disabled = step === 1;
+  const nextBtn = document.getElementById('stepNextBtn');
+  if (step === 4) {
+    nextBtn.innerHTML = '<span class="material-icons">how_to_reg</span>Submit Admission';
+  } else {
+    nextBtn.innerHTML = 'Next<span class="material-icons">chevron_right</span>';
+  }
+}
+
+function handleStepNext() {
+  if (currentStep < 4) {
+    gotoStep(currentStep + 1);
+  } else {
+    closeModal('newAdmissionModal');
+    showToast('Application submitted! App No: APP-009 generated', 'success');
+    currentStep = 1;
+    gotoStep(1);
+  }
+}
+
+// ---- Doc upload rows ----
+document.querySelectorAll('.doc-upload-row').forEach(el => {
+  const label = el.textContent;
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px dashed var(--border);
+      border-radius:10px;cursor:pointer;transition:all 0.18s"
+      onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'"
+      onclick="this.querySelector('span.material-icons').style.color='var(--success)';
+               this.querySelector('.doc-status').textContent='Uploaded ✓';
+               this.querySelector('.doc-status').style.color='var(--success)';
+               showToast('${label} uploaded','success')">
+      <span class="material-icons" style="color:var(--text-light);font-size:20px">upload_file</span>
+      <div style="flex:1">
+        <div style="font-size:13.5px;font-weight:600;color:var(--text-dark)">${label}</div>
+        <div class="doc-status" style="font-size:11.5px;color:var(--text-light)">Click to upload</div>
+      </div>
+    </div>`;
+});
+</script>
+</body>
+</html>

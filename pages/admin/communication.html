@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Communication — EduNigeria SMS</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="sb-overlay" class="sb-overlay"></div>
+<aside id="sidebar" class="sidebar"></aside>
+<div class="main-wrap">
+<header id="navbar" class="navbar"></header>
+<main class="page-content">
+
+  <div class="pg-header">
+    <div class="breadcrumb">
+      <a href="dashboard.html">Home</a>
+      <span class="material-icons">chevron_right</span><span>Communication</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1>Communication Centre</h1>
+        <p>Send SMS, emails, announcements, homework alerts & emergency notifications</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-outline btn-sm"><span class="material-icons">history</span>Message History</button>
+        <button class="btn btn-primary" onclick="openModal('composeModal')">
+          <span class="material-icons">edit</span>Compose Message
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#E3F2FD"><span class="material-icons" style="color:#0D47A1;font-size:24px">sms</span></div>
+      <div class="stat-value" data-count="2847">2,847</div>
+      <div class="stat-label">SMS Sent This Term</div>
+      <div class="stat-change change-up"><span class="material-icons">trending_up</span>92% delivery rate</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#E8F5E9"><span class="material-icons" style="color:#2E7D32;font-size:24px">email</span></div>
+      <div class="stat-value" data-count="1243">1,243</div>
+      <div class="stat-label">Emails Sent</div>
+      <div class="stat-change change-up"><span class="material-icons">trending_up</span>88% open rate</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#FFF8E1"><span class="material-icons" style="color:#FF8F00;font-size:24px">campaign</span></div>
+      <div class="stat-value" data-count="34">34</div>
+      <div class="stat-label">Announcements</div>
+      <div class="stat-change change-up"><span class="material-icons">trending_up</span>5 this week</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#FFEBEE"><span class="material-icons" style="color:#C62828;font-size:24px">notification_important</span></div>
+      <div class="stat-value" data-count="12">12</div>
+      <div class="stat-label">Emergency Alerts</div>
+      <div class="stat-change change-down"><span class="material-icons">schedule</span>Last: 5 days ago</div>
+    </div>
+  </div>
+
+  <!-- Main content split -->
+  <div class="grid-2" style="gap:20px;margin-bottom:24px">
+
+    <!-- Quick Send Panel -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Quick Message</h3>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm" id="qm-sms" onclick="setChannel('sms')"
+            style="background:var(--primary-soft);color:var(--primary);font-size:12px">
+            <span class="material-icons" style="font-size:14px">sms</span>SMS
+          </button>
+          <button class="btn btn-ghost btn-sm" id="qm-email" onclick="setChannel('email')" style="font-size:12px">
+            <span class="material-icons" style="font-size:14px">email</span>Email
+          </button>
+          <button class="btn btn-ghost btn-sm" id="qm-push" onclick="setChannel('push')" style="font-size:12px">
+            <span class="material-icons" style="font-size:14px">notifications</span>Push
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">Recipients</label>
+          <select class="form-select form-input" id="recipientGroup">
+            <option>All Parents</option>
+            <option>All Students</option>
+            <option>All Teaching Staff</option>
+            <option>SS 2A Parents</option>
+            <option>JSS 3 Students</option>
+            <option>Fee Defaulters</option>
+            <option>Absent Students' Parents</option>
+            <option>Custom Group…</option>
+          </select>
+        </div>
+        <div class="form-group" id="emailSubjectGroup" style="display:none">
+          <label class="form-label">Subject</label>
+          <input class="form-input" placeholder="Email subject…">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message <span id="charCount" style="color:var(--text-light);font-weight:400">(0 / 160)</span></label>
+          <textarea class="form-input form-textarea" id="msgBody" rows="5"
+            placeholder="Type your message here…"
+            oninput="document.getElementById('charCount').textContent='('+this.value.length+' / 160)'"></textarea>
+        </div>
+        <!-- Template picker -->
+        <div class="form-group">
+          <label class="form-label">Use Template</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <button class="btn btn-outline btn-sm" onclick="useTemplate('absent')">Absent Alert</button>
+            <button class="btn btn-outline btn-sm" onclick="useTemplate('fee')">Fee Reminder</button>
+            <button class="btn btn-outline btn-sm" onclick="useTemplate('result')">Result Ready</button>
+            <button class="btn btn-outline btn-sm" onclick="useTemplate('pta')">PTA Meeting</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-outline" style="flex:1">
+            <span class="material-icons">schedule</span>Schedule
+          </button>
+          <button class="btn btn-primary" style="flex:1" onclick="sendMessage()">
+            <span class="material-icons">send</span>Send Now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Announcements Board -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Announcements Board</h3>
+        <button class="btn btn-outline btn-sm" onclick="openModal('newAnnouncementModal')">
+          <span class="material-icons">add</span>Post
+        </button>
+      </div>
+      <div style="max-height:480px;overflow-y:auto" id="announcementsList"></div>
+    </div>
+  </div>
+
+  <!-- Message History -->
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-header">
+      <h3>Recent Messages Sent</h3>
+      <input class="form-input" style="width:220px;height:34px;font-size:12.5px" placeholder="Search messages…">
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr><th>Date & Time</th><th>Sent To</th><th>Channel</th><th>Message Preview</th><th>Recipients</th><th>Delivered</th><th>Status</th></tr>
+        </thead>
+        <tbody id="msgHistoryBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Inbox (from parents) -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Parent Messages — Inbox</h3>
+      <span class="badge badge-danger">5 Unread</span>
+    </div>
+    <div id="inboxList"></div>
+  </div>
+
+</main>
+</div>
+
+<!-- Compose Modal -->
+<div class="modal-overlay" id="composeModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2>Compose Message</h2>
+      <button class="icon-btn modal-close" onclick="closeModal('composeModal')"><span class="material-icons">close</span></button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Message Type</label>
+        <select class="form-select form-input">
+          <option>SMS</option><option>Email</option><option>In-App Notification</option><option>Emergency Alert</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select class="form-select form-input">
+          <option>Normal</option><option>High</option><option>Emergency</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Recipients</label>
+      <select class="form-select form-input">
+        <option>All Parents</option><option>All Students</option><option>All Staff</option>
+        <option>SS 2A Parents</option><option>Fee Defaulters' Parents</option><option>Custom…</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Subject</label>
+      <input class="form-input" placeholder="Message subject">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Message Body</label>
+      <textarea class="form-input form-textarea" rows="6" placeholder="Type your message…"></textarea>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--border)">
+      <span style="font-size:12.5px;font-weight:600;color:var(--text-medium)">Schedule for later:</span>
+      <input class="form-input" type="datetime-local" style="width:auto">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('composeModal')">Cancel</button>
+      <button class="btn btn-outline"><span class="material-icons">save</span>Save Draft</button>
+      <button class="btn btn-primary" onclick="closeModal('composeModal');showToast('Message sent successfully to 856 recipients','success')">
+        <span class="material-icons">send</span>Send Message
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Announcement Modal -->
+<div class="modal-overlay" id="newAnnouncementModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Post Announcement</h2>
+      <button class="icon-btn modal-close" onclick="closeModal('newAnnouncementModal')"><span class="material-icons">close</span></button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Title *</label>
+      <input class="form-input" placeholder="Announcement title">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <select class="form-select form-input">
+        <option>General</option><option>Academic</option><option>Events</option>
+        <option>Fee Notice</option><option>Emergency</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Visibility</label>
+      <div style="display:flex;gap:12px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13.5px"><input type="checkbox" checked>Students</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13.5px"><input type="checkbox" checked>Parents</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13.5px"><input type="checkbox" checked>Teachers</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Message</label>
+      <textarea class="form-input form-textarea" rows="5" placeholder="Announcement body…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('newAnnouncementModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('newAnnouncementModal');showToast('Announcement posted & notifications sent','success')">
+        <span class="material-icons">campaign</span>Post Announcement
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../../js/layout.js"></script>
+<script src="../../js/app.js"></script>
+<script>
+initLayout({ role:'admin', activePage:'communication', pageTitle:'Communication' });
+initAnimations();
+
+// ---- Announcements ----
+const announcements = [
+  { cat:'Academic', title:'2nd Term Examinations — June 10–21, 2024', body:'All students are advised to prepare thoroughly. Timetable available on notice boards and the student portal.', time:'Today, 9:00 AM', color:'var(--primary)', bg:'var(--primary-soft)', urgent:false },
+  { cat:'Fee Notice', title:'Final Reminder: School Fees Due June 30', body:'All outstanding balances must be cleared before the end of term. Contact the bursar for payment plans.', time:'Yesterday', color:'var(--warning)', bg:'var(--warning-light)', urgent:true },
+  { cat:'Events', title:'PTA Monthly Meeting — June 14, 2024', body:'All parents are invited to the PTA meeting at the school hall by 10:00 AM. Refreshments will be served.', time:'2 days ago', color:'var(--success)', bg:'var(--success-light)', urgent:false },
+  { cat:'General', title:'Sports Day Postponed to July 5, 2024', body:'Due to the examination period, Sports Day has been rescheduled. Full details to follow.', time:'3 days ago', color:'var(--text-light)', bg:'#ECEFF1', urgent:false },
+  { cat:'Academic', title:'WAEC Registration — SS3 Students', body:'SS3 students yet to register for WAEC 2024 should report to the exam officer immediately.', time:'5 days ago', color:'var(--purple)', bg:'var(--purple-light)', urgent:true },
+];
+
+const al = document.getElementById('announcementsList');
+announcements.forEach(a => {
+  al.innerHTML += `<div style="padding:14px 18px;border-bottom:1px solid var(--border-soft)">
+    <div style="display:flex;align-items:flex-start;gap:10px">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;
+            padding:2px 8px;border-radius:20px;background:${a.bg};color:${a.color}">${a.cat}</span>
+          ${a.urgent ? '<span class="badge badge-danger" style="font-size:9px">URGENT</span>' : ''}
+          <span style="font-size:11px;color:var(--text-light);margin-left:auto">${a.time}</span>
+        </div>
+        <div style="font-size:13.5px;font-weight:700;color:var(--text-dark);margin-bottom:4px">${a.title}</div>
+        <div style="font-size:12.5px;color:var(--text-light);line-height:1.6">${a.body}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:10px">
+      <button class="btn btn-ghost btn-sm" style="font-size:11.5px"><span class="material-icons" style="font-size:14px">edit</span>Edit</button>
+      <button class="btn btn-ghost btn-sm" style="font-size:11.5px;color:var(--danger)"><span class="material-icons" style="font-size:14px">delete_outline</span>Delete</button>
+    </div>
+  </div>`;
+});
+
+// ---- Message History ----
+const history = [
+  { dt:'3 Jun, 9:00 AM', to:'Absent Parents', ch:'SMS', preview:'Dear Parent, your ward was absent from school today…', count:197, del:189, status:'delivered' },
+  { dt:'2 Jun, 3:00 PM', to:'All Parents',    ch:'Email', preview:'June examination timetable is now available…',  count:1098,del:1020,status:'delivered' },
+  { dt:'1 Jun, 12:00 PM',to:'Fee Defaulters', ch:'SMS', preview:'Reminder: Your school fees balance of ₦X is outstanding…',count:34,del:32,status:'partial' },
+  { dt:'31 May, 10:00 AM',to:'SS 3 Students', ch:'Push', preview:'WAEC registration deadline is approaching. Act now!', count:186,del:182,status:'delivered' },
+  { dt:'28 May, 8:00 AM', to:'All Staff',     ch:'Email',preview:'Staff meeting rescheduled to Friday 31 May at 2:00 PM', count:70,del:68,status:'delivered' },
+];
+
+const mh = document.getElementById('msgHistoryBody');
+history.forEach(m => {
+  const chBg = { SMS:'#E3F2FD', Email:'#E8F5E9', Push:'#F3E5F5' }[m.ch];
+  const chColor = { SMS:'#0D47A1', Email:'#2E7D32', Push:'#6A1B9A' }[m.ch];
+  const sc = m.status==='delivered'?'badge-success':'badge-warning';
+  mh.innerHTML += `<tr>
+    <td style="font-size:12px;color:var(--text-light)">${m.dt}</td>
+    <td style="font-size:13px;font-weight:600">${m.to}</td>
+    <td><span style="padding:3px 10px;border-radius:20px;background:${chBg};color:${chColor};font-size:11px;font-weight:700">${m.ch}</span></td>
+    <td style="font-size:12.5px;color:var(--text-medium);max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.preview}</td>
+    <td style="font-weight:600">${m.count.toLocaleString()}</td>
+    <td style="color:var(--success);font-weight:700">${m.del.toLocaleString()}</td>
+    <td><span class="badge ${sc}">${m.status}</span></td>
+  </tr>`;
+});
+
+// ---- Inbox ----
+const inbox = [
+  { from:'Mrs C. Obi', child:'Adaeze Obi', msg:'Good morning, please can you clarify the exam timetable for SS2A?', time:'5 min ago', read:false },
+  { from:'Mr B. Chukwu', child:'Emeka Chukwu', msg:'We would like to appeal the chemistry result for last term.', time:'2 hrs ago', read:false },
+  { from:'Alhaji M. Aliyu', child:'Fatima Aliyu', msg:'Please confirm Fatima's outstanding balance. Thank you.', time:'Yesterday', read:false },
+  { from:'Dr P. Okafor', child:'Ngozi Okafor', msg:'Ngozi will be absent tomorrow for a medical appointment.', time:'Yesterday', read:false },
+  { from:'Mr K. Eze', child:'Blessing Eze', msg:'We received the report card. Excellent result! Thank you teachers.', time:'2 days ago', read:false },
+];
+const inb = document.getElementById('inboxList');
+inbox.forEach((m,i) => {
+  inb.innerHTML += `<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border-soft);
+    background:${m.read?'transparent':'#F5F8FF'};cursor:pointer"
+    onclick="this.style.background='transparent';document.querySelectorAll('.unread-dot')[${i}].style.display='none'">
+    <div style="width:38px;height:38px;border-radius:50%;background:${avaColor(m.from)};
+      display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:700;flex-shrink:0">
+      ${getInitials(m.from)}</div>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-weight:700;font-size:13.5px">${m.from}</span>
+        <span style="font-size:11px;color:var(--text-light)">Parent of ${m.child}</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--text-light)">${m.time}</span>
+        <span class="unread-dot" style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;${m.read?'display:none':''}"></span>
+      </div>
+      <div style="font-size:13px;color:var(--text-medium);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.msg}</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-shrink:0">
+      <button class="icon-btn" title="Reply" onclick="event.stopPropagation();showToast('Reply window opened','info')"><span class="material-icons">reply</span></button>
+    </div>
+  </div>`;
+});
+
+// ---- Quick send ----
+function setChannel(ch) {
+  ['sms','email','push'].forEach(c => {
+    document.getElementById(`qm-${c}`).className = c===ch ? 'btn btn-sm' : 'btn btn-ghost btn-sm';
+    if (c===ch) document.getElementById(`qm-${c}`).style.cssText='background:var(--primary-soft);color:var(--primary);font-size:12px';
+    else document.getElementById(`qm-${c}`).style.cssText='font-size:12px';
+  });
+  document.getElementById('emailSubjectGroup').style.display = ch==='email' ? 'block' : 'none';
+}
+
+const templates = {
+  absent:'Dear Parent, your ward [Student Name] was absent from school today, [Date]. Please ensure attendance tomorrow. — Greenfield Academy',
+  fee:'Dear Parent, this is a reminder that your ward [Student Name]\'s school fees balance of ₦[Amount] is outstanding. Deadline: June 30, 2024.',
+  result:'Dear Parent, the 2nd Term results for your ward [Student Name] are now available on the parent portal. Login to view. — Greenfield Academy',
+  pta:'Dear Parent, you are invited to our PTA meeting on June 14, 2024 at 10:00 AM in the school hall. Your attendance is important. — Greenfield Academy',
+};
+function useTemplate(key) {
+  document.getElementById('msgBody').value = templates[key] || '';
+  const len = templates[key]?.length || 0;
+  document.getElementById('charCount').textContent = `(${len} / 160)`;
+}
+
+function sendMessage() {
+  const group = document.getElementById('recipientGroup').value;
+  const msg   = document.getElementById('msgBody').value;
+  if (!msg.trim()) { showToast('Please type a message first','warning'); return; }
+  showToast(`Message sent to ${group}`, 'success');
+  document.getElementById('msgBody').value = '';
+  document.getElementById('charCount').textContent = '(0 / 160)';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Assignments — EduNigeria SMS</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="sb-overlay" class="sb-overlay"></div>
+<aside id="sidebar" class="sidebar"></aside>
+<div class="main-wrap">
+<header id="navbar" class="navbar"></header>
+<main class="page-content">
+
+  <div class="pg-header">
+    <div class="breadcrumb">
+      <a href="dashboard.html">Home</a>
+      <span class="material-icons">chevron_right</span><span>Assignments</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1>Assignment & Homework</h1>
+        <p>Set, track, submit and grade assignments across all classes and subjects</p>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('newAssignModal')">
+        <span class="material-icons">add</span>Set Assignment
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#E3F2FD"><span class="material-icons" style="color:#0D47A1;font-size:24px">assignment</span></div>
+      <div class="stat-value" data-count="57">57</div>
+      <div class="stat-label">Active Assignments</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#E8F5E9"><span class="material-icons" style="color:#2E7D32;font-size:24px">grading</span></div>
+      <div class="stat-value" data-count="34">34</div>
+      <div class="stat-label">Awaiting Grading</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#FFEBEE"><span class="material-icons" style="color:#C62828;font-size:24px">schedule</span></div>
+      <div class="stat-value" data-count="12">12</div>
+      <div class="stat-label">Overdue Submissions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#FFF8E1"><span class="material-icons" style="color:#FF8F00;font-size:24px">check_circle</span></div>
+      <div class="stat-value" data-count="89" data-suffix="%">89%</div>
+      <div class="stat-label">Avg. Submission Rate</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-body" style="padding:12px 18px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <div style="position:relative;flex:1;min-width:180px">
+        <span class="material-icons" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:17px;color:var(--text-light)">search</span>
+        <input class="form-input" style="padding-left:38px" placeholder="Search assignments…">
+      </div>
+      <select class="form-select" style="width:auto;height:36px">
+        <option>All Classes</option><option>SS 2A</option><option>JSS 3A</option>
+      </select>
+      <select class="form-select" style="width:auto;height:36px">
+        <option>All Subjects</option><option>Mathematics</option><option>English</option>
+      </select>
+      <select class="form-select" style="width:auto;height:36px">
+        <option>All Status</option><option>Active</option><option>Graded</option><option>Overdue</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Assignments Table -->
+  <div class="card">
+    <div class="card-header">
+      <h3>All Assignments</h3>
+      <span id="assignCount" style="font-size:13px;color:var(--text-light)">57 records</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Title</th><th>Teacher</th><th>Class</th><th>Subject</th>
+            <th>Set On</th><th>Deadline</th><th>Submitted</th><th>Graded</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="assignTableBody"></tbody>
+      </table>
+    </div>
+    <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:13px;color:var(--text-light)">Showing 1–10 of 57</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm"><span class="material-icons">chevron_left</span></button>
+        <button class="btn btn-primary btn-sm">1</button>
+        <button class="btn btn-outline btn-sm">2</button>
+        <button class="btn btn-outline btn-sm">3</button>
+        <button class="btn btn-outline btn-sm"><span class="material-icons">chevron_right</span></button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<!-- New Assignment Modal -->
+<div class="modal-overlay" id="newAssignModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2>Set New Assignment</h2>
+      <button class="icon-btn modal-close" onclick="closeModal('newAssignModal')"><span class="material-icons">close</span></button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Assignment Title *</label>
+      <input class="form-input" placeholder="e.g. Chapter 7 — Algebra Practice Set">
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Class *</label>
+        <select class="form-select form-input">
+          <option>SS 2A</option><option>SS 2B</option><option>JSS 3A</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Subject *</label>
+        <select class="form-select form-input">
+          <option>Mathematics</option><option>English</option><option>Biology</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Deadline *</label>
+        <input class="form-input" type="datetime-local">
+      </div>
+      <div class="form-group"><label class="form-label">Max Score</label>
+        <input class="form-input" type="number" value="20">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Instructions</label>
+      <textarea class="form-input form-textarea" rows="4" placeholder="Detailed instructions for students…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('newAssignModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('newAssignModal');showToast('Assignment posted and students notified','success')">
+        <span class="material-icons">send</span>Post Assignment
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../../js/layout.js"></script>
+<script src="../../js/app.js"></script>
+<script>
+initLayout({ role:'admin', activePage:'assignments', pageTitle:'Assignments' });
+initAnimations();
+
+const assigns = [
+  { title:'Algebra Practice — Chapter 7',     teacher:'Mrs T. Okonkwo', cls:'SS 2A',   subj:'Mathematics', set:'28 May', dead:'5 Jun',  sub:38, graded:38, status:'graded'   },
+  { title:'Essay: Nigerian Independence',      teacher:'Mr A. Ibrahim',  cls:'SS 2A',   subj:'English',     set:'30 May', dead:'10 Jun', sub:22, graded:0,  status:'open'     },
+  { title:'Lab Report — Titration',            teacher:'Mrs F. Aliyu',   cls:'SS 1A',   subj:'Chemistry',   set:'1 Jun',  dead:'12 Jun', sub:14, graded:0,  status:'open'     },
+  { title:'Statistics Data Collection',        teacher:'Mrs T. Okonkwo', cls:'JSS 3B',  subj:'Mathematics', set:'2 Jun',  dead:'3 Jun',  sub:40, graded:0,  status:'due-today'},
+  { title:'Quadratic Equations Worksheet',     teacher:'Mrs T. Okonkwo', cls:'SS 2B',   subj:'Mathematics', set:'29 May', dead:'7 Jun',  sub:32, graded:18, status:'partial'  },
+  { title:'Biology Drawing — Cell Structure',  teacher:'Dr B. Adeyemi',  cls:'JSS 2A',  subj:'Biology',     set:'27 May', dead:'4 Jun',  sub:38, graded:38, status:'graded'   },
+  { title:'Physics Problem Set 4',             teacher:'Mr K. Osei',     cls:'SS 1B',   subj:'Physics',     set:'28 May', dead:'8 Jun',  sub:10, graded:0,  status:'open'     },
+  { title:'Civic Ed — Constitution Analysis',  teacher:'Mrs C. Nwosu',   cls:'JSS 3A',  subj:'Civic Ed.',   set:'25 May', dead:'2 Jun',  sub:30, graded:0,  status:'overdue'  },
+];
+
+const tbody = document.getElementById('assignTableBody');
+assigns.forEach(a => {
+  const sc = { graded:'badge-success', partial:'badge-warning', open:'badge-primary', 'due-today':'badge-danger', overdue:'badge-danger' }[a.status];
+  const sl = { graded:'Graded', partial:'Partially Graded', open:'Active', 'due-today':'Due Today', overdue:'Overdue' }[a.status];
+  tbody.innerHTML += `<tr>
+    <td style="font-weight:600;max-width:200px">${a.title}</td>
+    <td>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="tbl-avatar" style="background:${avaColor(a.teacher)};width:28px;height:28px;font-size:10px">${getInitials(a.teacher)}</div>
+        <span style="font-size:12.5px">${a.teacher}</span>
+      </div>
+    </td>
+    <td><span class="badge badge-primary">${a.cls}</span></td>
+    <td style="font-size:12.5px">${a.subj}</td>
+    <td style="font-size:12px;color:var(--text-light)">${a.set}</td>
+    <td style="font-size:12.5px;font-weight:600;color:${a.status==='overdue'||a.status==='due-today'?'var(--danger)':'var(--text-medium)'}">${a.dead}</td>
+    <td style="font-weight:600">${a.sub}</td>
+    <td style="font-weight:600;color:${a.graded===a.sub?'var(--success)':'var(--warning)'}">${a.graded}</td>
+    <td><span class="badge ${sc}">${sl}</span></td>
+    <td>
+      <div class="tbl-actions">
+        <button class="icon-btn" title="View submissions"><span class="material-icons">folder_open</span></button>
+        <button class="icon-btn" title="Grade" onclick="showToast('Grading panel opened','info')"><span class="material-icons">grading</span></button>
+        <button class="icon-btn" title="Edit"><span class="material-icons">edit</span></button>
+        <button class="icon-btn" style="color:var(--danger)" title="Delete"><span class="material-icons">delete_outline</span></button>
+      </div>
+    </td>
+  </tr>`;
+});
+</script>
+</body>
+</html>

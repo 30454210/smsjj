@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Inventory — EduNigeria SMS</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="sb-overlay" class="sb-overlay"></div>
+<aside id="sidebar" class="sidebar"></aside>
+<div class="main-wrap">
+<header id="navbar" class="navbar"></header>
+<main class="page-content">
+
+  <div class="pg-header">
+    <div class="breadcrumb">
+      <a href="dashboard.html">Home</a>
+      <span class="material-icons">chevron_right</span><span>Inventory</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1>Inventory & Assets</h1>
+        <p>Track lab equipment, classroom materials, buses, uniforms and school property</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-outline btn-sm"><span class="material-icons">download</span>Export</button>
+        <button class="btn btn-primary" onclick="openModal('addItemModal')">
+          <span class="material-icons">add</span>Add Item
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#E3F2FD"><span class="material-icons" style="color:#0D47A1;font-size:24px">inventory_2</span></div>
+      <div class="stat-value" data-count="1248">1,248</div>
+      <div class="stat-label">Total Items Tracked</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#FFEBEE"><span class="material-icons" style="color:#C62828;font-size:24px">report_problem</span></div>
+      <div class="stat-value" data-count="23">23</div>
+      <div class="stat-label">Low Stock Alerts</div>
+      <div class="stat-change change-down"><span class="material-icons">warning</span>Reorder needed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#FFF8E1"><span class="material-icons" style="color:#FF8F00;font-size:24px">build</span></div>
+      <div class="stat-value" data-count="8">8</div>
+      <div class="stat-label">Under Maintenance</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#E8F5E9"><span class="material-icons" style="color:#2E7D32;font-size:24px">attach_money</span></div>
+      <div class="stat-value" data-prefix="₦" data-count="12.4" data-suffix="M">₦12.4M</div>
+      <div class="stat-label">Total Asset Value</div>
+    </div>
+  </div>
+
+  <!-- Category Cards -->
+  <div class="grid-3" style="margin-bottom:24px" id="categoryCards"></div>
+
+  <!-- Search & Filter -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-body" style="padding:12px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div style="position:relative;flex:1;min-width:180px">
+        <span class="material-icons" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:17px;color:var(--text-light)">search</span>
+        <input class="form-input" style="padding-left:38px" placeholder="Search inventory…" oninput="renderInventory(this.value)">
+      </div>
+      <select class="form-select" style="width:auto;height:36px" id="catFilterInv" onchange="renderInventory()">
+        <option value="">All Categories</option>
+        <option>Lab Equipment</option><option>Classroom Materials</option>
+        <option>Sports</option><option>Buses</option><option>Electronics</option><option>Uniforms</option>
+      </select>
+      <select class="form-select" style="width:auto;height:36px">
+        <option>All Status</option><option>Available</option><option>Low Stock</option><option>Out of Stock</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Inventory Table -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Inventory Records</h3>
+      <span style="font-size:13px;color:var(--text-light)">1,248 items across 6 categories</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Item</th><th>Category</th><th>Location</th>
+            <th>Qty Available</th><th>Qty Total</th><th>Unit Value</th>
+            <th>Condition</th><th>Last Updated</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryBody"></tbody>
+      </table>
+    </div>
+    <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:13px;color:var(--text-light)">Showing 1–12 of 1,248</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm"><span class="material-icons">chevron_left</span></button>
+        <button class="btn btn-primary btn-sm">1</button>
+        <button class="btn btn-outline btn-sm">2</button>
+        <button class="btn btn-outline btn-sm"><span class="material-icons">chevron_right</span></button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<!-- Add Item Modal -->
+<div class="modal-overlay" id="addItemModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Add Inventory Item</h2>
+      <button class="icon-btn modal-close" onclick="closeModal('addItemModal')"><span class="material-icons">close</span></button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Item Name *</label><input class="form-input" placeholder="e.g. Microscope (Binocular)"></div>
+      <div class="form-group"><label class="form-label">Category *</label>
+        <select class="form-select form-input">
+          <option>Lab Equipment</option><option>Classroom Materials</option>
+          <option>Sports</option><option>Buses</option><option>Electronics</option><option>Uniforms</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Quantity *</label><input class="form-input" type="number" placeholder="e.g. 10"></div>
+      <div class="form-group"><label class="form-label">Unit Value (₦)</label><input class="form-input" type="number" placeholder="e.g. 45000"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Location / Store</label><input class="form-input" placeholder="e.g. Science Lab 1"></div>
+      <div class="form-group"><label class="form-label">Condition</label>
+        <select class="form-select form-input"><option>Excellent</option><option>Good</option><option>Fair</option><option>Poor</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Description / Notes</label>
+      <textarea class="form-input form-textarea" rows="2" placeholder="Optional description…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('addItemModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('addItemModal');showToast('Item added to inventory','success')">
+        <span class="material-icons">save</span>Add to Inventory
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../../js/layout.js"></script>
+<script src="../../js/app.js"></script>
+<script>
+initLayout({ role:'admin', activePage:'inventory', pageTitle:'Inventory' });
+initAnimations();
+
+// ---- Category Summary Cards ----
+const categories = [
+  { name:'Lab Equipment',       icon:'science',         count:214, value:'₦4.2M',  alert:3,  color:'#0D47A1', bg:'#E3F2FD' },
+  { name:'Classroom Materials', icon:'menu_book',        count:486, value:'₦1.1M',  alert:8,  color:'#2E7D32', bg:'#E8F5E9' },
+  { name:'Sports Equipment',    icon:'sports_soccer',   count:132, value:'₦800K',   alert:4,  color:'#FF8F00', bg:'#FFF8E1' },
+  { name:'School Buses',         icon:'directions_bus',  count:6,   value:'₦52M',   alert:1,  color:'#6A1B9A', bg:'#F3E5F5' },
+  { name:'Electronics & ICT',   icon:'computer',        count:98,  value:'₦6.2M',   alert:5,  color:'#00695C', bg:'#E0F2F1' },
+  { name:'Uniforms & Textbooks',icon:'checkroom',       count:312, value:'₦850K',   alert:2,  color:'#E65100', bg:'#FFF3E0' },
+];
+
+const cc = document.getElementById('categoryCards');
+categories.forEach(c => {
+  cc.innerHTML += `
+    <div class="card" style="cursor:pointer;transition:all 0.2s"
+      onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+      <div style="padding:18px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="width:46px;height:46px;border-radius:13px;background:${c.bg};
+            display:flex;align-items:center;justify-content:center">
+            <span class="material-icons" style="color:${c.color};font-size:22px">${c.icon}</span>
+          </div>
+          ${c.alert > 0 ? `<span class="badge badge-danger">${c.alert} low</span>` : '<span class="badge badge-success">All OK</span>'}
+        </div>
+        <div style="font-size:15px;font-weight:700;color:var(--text-dark);margin-bottom:4px">${c.name}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+          <span style="font-size:22px;font-weight:800;font-family:'Lexend',sans-serif;color:${c.color}">${c.count}</span>
+          <span style="font-size:12.5px;color:var(--text-light)">Value: ${c.value}</span>
+        </div>
+      </div>
+    </div>`;
+});
+
+// ---- Inventory Items ----
+const items = [
+  { name:'Binocular Microscope',     cat:'Lab Equipment',       loc:'Science Lab 1',    avail:8,  total:10, val:45000,  cond:'Good',      updated:'2 Jun' },
+  { name:'Bunsen Burner',            cat:'Lab Equipment',       loc:'Chemistry Lab',    avail:14, total:16, val:8000,   cond:'Good',      updated:'1 Jun' },
+  { name:'Whiteboard',               cat:'Classroom Materials',  loc:'Various Classes',  avail:22, total:24, val:18000,  cond:'Excellent', updated:'28 May' },
+  { name:'Student Desk & Chair',     cat:'Classroom Materials',  loc:'Storeroom B',      avail:45, total:60, val:12000,  cond:'Good',      updated:'25 May' },
+  { name:'Football',                  cat:'Sports',              loc:'Sports Store',     avail:3,  total:8,  val:5000,   cond:'Fair',      updated:'20 May' },
+  { name:'School Bus (15-Seater)',    cat:'Buses',               loc:'Garage',           avail:2,  total:3,  val:8500000,cond:'Good',      updated:'3 Jun' },
+  { name:'Desktop Computer (iCore5)',cat:'Electronics & ICT',    loc:'ICT Lab',          avail:24, total:30, val:220000, cond:'Excellent', updated:'30 May' },
+  { name:'Projector (Epson)',        cat:'Electronics & ICT',    loc:'AV Room / Classes',avail:3,  total:5,  val:95000,  cond:'Good',      updated:'28 May' },
+  { name:'Male School Uniform Set',  cat:'Uniforms & Textbooks', loc:'Uniform Store',    avail:12, total:50, val:4500,   cond:'New',       updated:'15 May' },
+  { name:'Female School Uniform Set',cat:'Uniforms & Textbooks', loc:'Uniform Store',    avail:18, total:60, val:4800,   cond:'New',       updated:'15 May' },
+  { name:'Test Tube (Glass)',        cat:'Lab Equipment',        loc:'Chemistry Lab',    avail:80, total:100,val:500,    cond:'Good',      updated:'22 May' },
+  { name:'Tennis Table Set',         cat:'Sports',              loc:'Sports Hall',      avail:2,  total:2,  val:35000,  cond:'Excellent', updated:'10 May' },
+];
+
+function renderInventory(q = '') {
+  const tbody = document.getElementById('inventoryBody');
+  tbody.innerHTML = '';
+  const cat = document.getElementById('catFilterInv').value;
+  items
+    .filter(i => (!q || i.name.toLowerCase().includes(q.toLowerCase())) && (!cat || i.cat === cat))
+    .forEach(it => {
+      const pct       = Math.round(it.avail / it.total * 100);
+      const isLow     = pct <= 40;
+      const isOut     = it.avail === 0;
+      const barColor  = isOut ? 'var(--danger)' : isLow ? 'var(--warning)' : 'var(--success)';
+      const condColor = { Excellent:'badge-success', Good:'badge-primary', Fair:'badge-warning', Poor:'badge-danger', New:'badge-success' }[it.cond];
+      tbody.innerHTML += `
+        <tr>
+          <td style="font-weight:600;font-size:13.5px">${it.name}</td>
+          <td style="font-size:12.5px">
+            <span style="padding:3px 8px;border-radius:6px;background:var(--bg);font-size:11.5px">${it.cat}</span>
+          </td>
+          <td style="font-size:12.5px;color:var(--text-light)">${it.loc}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="progress-bar" style="width:50px">
+                <div class="progress-fill" style="width:${pct}%;background:${barColor}"></div>
+              </div>
+              <span style="font-weight:700;font-size:13px;color:${barColor}">${it.avail}</span>
+              ${isLow && !isOut ? '<span class="badge badge-warning" style="font-size:9px">Low</span>' : ''}
+              ${isOut ? '<span class="badge badge-danger" style="font-size:9px">Out</span>' : ''}
+            </div>
+          </td>
+          <td style="font-size:13px;color:var(--text-light)">${it.total}</td>
+          <td style="font-weight:600;font-size:13px">${naira(it.val)}</td>
+          <td><span class="badge ${condColor}">${it.cond}</span></td>
+          <td style="font-size:12px;color:var(--text-light)">${it.updated}</td>
+          <td>
+            <div class="tbl-actions">
+              <button class="icon-btn" title="Edit" onclick="openModal('addItemModal')"><span class="material-icons">edit</span></button>
+              <button class="icon-btn" title="Reorder" onclick="showToast('Reorder request submitted','success')"><span class="material-icons">shopping_cart</span></button>
+              <button class="icon-btn" title="Log maintenance" onclick="showToast('Maintenance logged','info')"><span class="material-icons">build</span></button>
+            </div>
+          </td>
+        </tr>`;
+    });
+}
+renderInventory();
+</script>
+</body>
+</html>
